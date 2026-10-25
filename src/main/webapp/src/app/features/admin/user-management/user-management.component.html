@@ -1,0 +1,339 @@
+<div class="page">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <h1 class="page-title">User Management</h1>
+  </div>
+
+  <!-- ── Alerts ─────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ error() }}
+      </div>
+      <button class="alert-close" (click)="clearMessages()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        {{ successMessage() }}
+      </div>
+    </div>
+  }
+
+  <!-- ── Controls: tabs + search ────────────────────────────────── -->
+  <div class="controls">
+    <div class="tab-nav">
+      <button class="tab" [class.active]="activeTab() === 'pending'" (click)="setActiveTab('pending')">
+        <span class="tab-dot tab-dot--warning"></span>
+        Pending
+        @if (pendingUsers().length > 0) {
+          <span class="tab-count tab-count--warning">{{ pendingUsers().length }}</span>
+        }
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'all'" (click)="setActiveTab('all')">
+        All Users
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'online'" (click)="setActiveTab('online')">
+        <span class="tab-dot tab-dot--success"></span>
+        Online
+        @if (onlineUsers().length > 0) {
+          <span class="tab-count tab-count--success">{{ onlineUsers().length }}</span>
+        }
+      </button>
+    </div>
+
+    @if (activeTab() === 'all') {
+      <div class="search-bar">
+        <div class="search-wrap">
+          <input type="text" class="search-input" [(ngModel)]="searchQuery"
+                 (keyup.enter)="search()" placeholder="Search by email or login…" />
+        </div>
+        <button class="btn-search" (click)="search()">Search</button>
+      </div>
+    }
+  </div>
+
+  <!-- ──────────────────────────────────────────────────────────── -->
+  <!-- Pending Tab                                                   -->
+  <!-- ──────────────────────────────────────────────────────────── -->
+  @if (activeTab() === 'pending') {
+
+    @if (loading()) {
+      <div class="card-list">
+        @for (i of [1,2,3]; track i) {
+          <div class="card-skeleton">
+            <div class="sk sk--avatar"></div>
+            <div class="sk-lines">
+              <div class="sk sk--name"></div>
+              <div class="sk sk--email"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (pendingUsers().length === 0) {
+      <div class="empty-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <polyline points="16 11 18 13 22 9"></polyline>
+        </svg>
+        <p class="empty-title">No pending approvals</p>
+        <p class="empty-sub">All user registrations have been reviewed</p>
+      </div>
+    } @else {
+      <div class="card-list">
+        @for (user of pendingUsers(); track user.id) {
+          <div class="user-card">
+            <div class="user-card-left">
+              <div class="avatar avatar--warning">
+                {{ user.login?.charAt(0)?.toUpperCase() || '?' }}
+              </div>
+              <div class="user-meta">
+                <span class="user-login">{{ user.login }}</span>
+                <span class="user-email">{{ user.email }}</span>
+                @if (user.firstName || user.lastName) {
+                  <span class="user-fullname">{{ user.firstName }} {{ user.lastName }}</span>
+                }
+              </div>
+            </div>
+            <div class="user-card-right">
+              <span class="status-pill status-pending">Pending</span>
+              <div class="row-actions">
+                <button class="icon-btn icon-btn--approve" (click)="approveUser(user)" title="Approve">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2.5"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button class="icon-btn icon-btn--reject" (click)="rejectUser(user)" title="Reject">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                       fill="none" stroke="currentColor" stroke-width="2.5"
+                       stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- ──────────────────────────────────────────────────────────── -->
+  <!-- All Users Tab                                                 -->
+  <!-- ──────────────────────────────────────────────────────────── -->
+  @if (activeTab() === 'all') {
+    <div class="table-card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            @if (loading()) {
+              @for (i of [1,2,3,4,5,6]; track i) {
+                <tr class="skeleton-row">
+                  <td>
+                    <div class="sk-user-cell">
+                      <div class="sk sk--avatar-sm"></div>
+                      <div class="sk sk--name-sm"></div>
+                    </div>
+                  </td>
+                  <td><span class="sk sk--md"></span></td>
+                  <td><span class="sk sk--lg"></span></td>
+                  <td><span class="sk sk--xs"></span></td>
+                  <td><span class="sk sk--xs"></span></td>
+                </tr>
+              }
+            }
+
+            @if (!loading()) {
+              @for (user of allUsers(); track user.id) {
+                <tr class="data-row">
+                  <td>
+                    <div class="user-cell">
+                      <div class="avatar avatar--sm">
+                        {{ user.login?.charAt(0)?.toUpperCase() || '?' }}
+                      </div>
+                      <div class="user-cell-meta">
+                        <span class="user-login">{{ user.login }}</span>
+                        @if (user.firstName || user.lastName) {
+                          <span class="user-fullname">{{ user.firstName }} {{ user.lastName }}</span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                  <td class="cell-secondary">{{ user.email }}</td>
+                  <td>
+                    <div class="roles-wrap">
+                      @for (role of availableRoles(); track role) {
+                        <label class="role-pill" [class.role-pill--active]="hasRole(user, role)">
+                          <input type="checkbox"
+                                 [checked]="hasRole(user, role)"
+                                 (change)="toggleUserRole(user, role, $event)" />
+                          {{ role.replace('ROLE_', '') }}
+                        </label>
+                      }
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-pill"
+                          [class.status-active]="user.activated"
+                          [class.status-inactive]="!user.activated">
+                      {{ user.activated ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="icon-btn"
+                            [class.icon-btn--suspend]="user.activated"
+                            [class.icon-btn--activate]="!user.activated"
+                            (click)="toggleUserActivation(user)"
+                            [title]="user.activated ? 'Deactivate' : 'Activate'">
+                      @if (user.activated) {
+                        <!-- Pause / Deactivate -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="6" y="4" width="4" height="16"></rect>
+                          <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                      } @else {
+                        <!-- Play / Activate -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                      }
+                    </button>
+                  </td>
+                </tr>
+              }
+
+              @if (allUsers().length === 0) {
+                <tr>
+                  <td colspan="5">
+                    <div class="empty-state">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="1.5"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                      <p class="empty-title">No users found</p>
+                      <p class="empty-sub">Try a different search term</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+
+          </tbody>
+        </table>
+      </div>
+
+      @if (!loading() && allUsers().length > 0) {
+        <div class="table-footer">
+          <app-pagination
+            [currentPage]="currentPage()"
+            [totalItems]="totalUsers()"
+            [pageSize]="pageSize()"
+            (pageChange)="onPageChange($event)"
+            (pageSizeChange)="onPageSizeChange($event)" />
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ──────────────────────────────────────────────────────────── -->
+  <!-- Online Tab                                                    -->
+  <!-- ──────────────────────────────────────────────────────────── -->
+  @if (activeTab() === 'online') {
+
+    @if (loading()) {
+      <div class="card-list">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="card-skeleton">
+            <div class="sk sk--avatar"></div>
+            <div class="sk-lines">
+              <div class="sk sk--name"></div>
+              <div class="sk sk--email"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (onlineUsers().length === 0) {
+      <div class="empty-card">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p class="empty-title">No users online</p>
+        <p class="empty-sub">No active sessions at the moment</p>
+      </div>
+    } @else {
+      <div class="card-list">
+        @for (user of onlineUsers(); track user.id) {
+          <div class="user-card">
+            <div class="user-card-left">
+              <div class="avatar avatar--online">
+                {{ user.login?.charAt(0)?.toUpperCase() || '?' }}
+                <span class="online-dot"></span>
+              </div>
+              <div class="user-meta">
+                <span class="user-login">{{ user.login }}</span>
+                <span class="user-email">{{ user.email }}</span>
+                @if (user.firstName || user.lastName) {
+                  <span class="user-fullname">{{ user.firstName }} {{ user.lastName }}</span>
+                }
+              </div>
+            </div>
+            <div class="user-card-right">
+              <span class="status-pill status-active">Online</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

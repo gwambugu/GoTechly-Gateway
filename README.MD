@@ -1,0 +1,6 @@
+This app is springboot app that is using Springboot 4, java 25 and postgres. For now its a backend springboot application, I have enabled security and am using JWT authentication. I have implemented the following reactive endpoints:
+/api/register
+/api/authenticate
+/api/account/reset-password/init
+/api/account/reset-password/finish
+My target is to have a full stack app so I want to add a frontend to this application. I want to use angular framework on the latest version. I want to start with following pages/components landing page, login page, registration page , home page (after succesful login) and forgot password link and page. I want you to create this layout navbar,main and footer where navbar and footer are global while main has router-outlet where other components will be loaded. I will add more components later so I want to start with a sound and robust design. I believe you can do this but incase you need a reference you can have check on jhipster angular design. You can review my backend to better understand the code. Please plan before exceuting show  me the plan for approval.

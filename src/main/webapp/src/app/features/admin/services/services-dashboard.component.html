@@ -1,0 +1,150 @@
+<div class="services-container">
+  <div class="header">
+    <h1>Registered Services</h1>
+    <button
+      class="btn-auto-refresh"
+      [class.active]="autoRefresh()"
+      (click)="toggleAutoRefresh()">
+      Auto-refresh: {{ autoRefresh() ? 'ON' : 'OFF' }}
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      {{ error() }}
+      <button class="close-btn" (click)="error.set('')">&times;</button>
+    </div>
+  }
+
+  @if (notice()) {
+    <div class="alert alert-info">
+      {{ notice() }}
+      <button class="close-btn" (click)="notice.set('')">&times;</button>
+    </div>
+  }
+
+  @if (loading() && services().length === 0) {
+    <div class="loading">Loading services...</div>
+  }
+
+  @if (!loading() && services().length === 0 && !error()) {
+    <div class="empty-state">No registered services found</div>
+  }
+
+  <div class="services-grid">
+    @for (service of services(); track service.name) {
+      <div class="service-card" [class.draining]="service.drainState === 'DRAINING'">
+        <div class="card-header">
+          <span class="service-name">{{ service.name }}</span>
+          <span class="status-dot"
+                [class.up]="displayStatus(service) === 'UP'"
+                [class.draining]="displayStatus(service) === 'DRAINING'"
+                [class.down]="displayStatus(service) === 'DOWN'"></span>
+        </div>
+        <div class="card-body">
+          <div class="field">
+            <span class="label">URL</span>
+            <span class="value url">{{ service.baseUrl }}</span>
+          </div>
+          <div class="field">
+            <span class="label">Status</span>
+            <span class="value"
+                  [class.status-up]="displayStatus(service) === 'UP'"
+                  [class.status-draining]="displayStatus(service) === 'DRAINING'"
+                  [class.status-down]="displayStatus(service) === 'DOWN'">
+              {{ displayStatus(service) }}
+            </span>
+          </div>
+          <div class="field">
+            <span class="label">Response Time</span>
+            <span class="value">{{ service.responseTimeMs }}ms</span>
+          </div>
+          <div class="field">
+            <span class="label">Last Checked</span>
+            <span class="value">{{ service.lastChecked }}</span>
+          </div>
+
+          @if (service.drainState === 'DRAINING') {
+            <div class="drain-panel" [class.quiet]="service.quiet" [class.stale]="isStaleDrain(service)">
+              <div class="drain-status">{{ waitingOn(service) }}</div>
+              <div class="drain-detail">
+                Drained {{ drainedFor(service) }} ago by {{ service.requestedBy }}
+              </div>
+              @if (isStaleDrain(service)) {
+                <div class="drain-detail warn">
+                  This node has been out of the pool longer than a deploy takes. The cluster is
+                  running with reduced capacity — finish the deploy and restart it, or return it to
+                  service.
+                </div>
+              }
+              @if (!service.quiet && service.oldestRequestAgeMs > 0) {
+                <div class="drain-detail">Oldest request: {{ service.oldestRequestAgeMs }}ms</div>
+              }
+              @if (!service.quiet && service.oldestRequestAgeMs > 45000) {
+                <div class="drain-detail warn">
+                  Older than any expected core-banking timeout — this request is stuck, not slow.
+                </div>
+              }
+              @if (!service.quiet && service.inFlightRequests?.length) {
+                <div class="drain-detail">In flight:</div>
+                <ul class="drain-requests">
+                  @for (r of service.inFlightRequests; track $index) {
+                    <li>{{ describeRequest(r) }}</li>
+                  }
+                </ul>
+              }
+              @if (service.arrivalsWhileDraining) {
+                <div class="drain-detail" [class.warn]="arrivalsLookWrong(service)">
+                  {{ service.arrivalsWhileDraining }} request(s) arrived after the drain.
+                  @if (arrivalsLookWrong(service)) {
+                    Still arriving well after the load balancer should have dropped this node — the
+                    source address below shows which route is bypassing it.
+                  }
+                </div>
+                <ul class="drain-requests">
+                  @for (r of service.recentArrivalsWhileDraining; track $index) {
+                    <li>{{ describeRequest(r) }}</li>
+                  }
+                </ul>
+              }
+            </div>
+          }
+
+          @if (service.error) {
+            <div class="error-message">{{ service.error }}</div>
+          }
+        </div>
+
+        <div class="card-actions">
+          @if (canDrain(service)) {
+            <button class="btn btn-warn"
+                    [disabled]="busyNode() === service.name"
+                    (click)="drain(service)">
+              {{ busyNode() === service.name ? 'Draining…' : 'Drain for maintenance' }}
+            </button>
+            <!-- Only offered once the guard has actually refused, so a full platform stop is a
+                 second, deliberate click and never a button sitting there by default. -->
+            @if (guardRefused() === service.name) {
+              <button class="btn btn-danger-outline"
+                      [disabled]="busyNode() === service.name"
+                      (click)="forceDrain(service)"
+                      title="Drains the last instance taking traffic — the platform will 503">
+                Force drain anyway
+              </button>
+            }
+          }
+          @if (canUndrain(service)) {
+            <button class="btn btn-primary"
+                    [disabled]="busyNode() === service.name"
+                    (click)="undrain(service)">
+              {{ busyNode() === service.name ? 'Working…' : 'Return to service' }}
+            </button>
+          }
+          @if (service.drainState === 'UNKNOWN') {
+            <span class="drain-unknown">Drain state unavailable</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

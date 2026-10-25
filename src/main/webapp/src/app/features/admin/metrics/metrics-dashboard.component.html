@@ -1,0 +1,171 @@
+<div class="page">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <h1 class="page-title">API Gateway Metrics</h1>
+    <div class="toolbar-actions">
+      <a routerLink="/admin/jpos" class="btn-ghost btn-ghost--info">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+        Tx Manager Metrics
+      </a>
+      <button class="btn-ghost" (click)="loadData()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+      <label class="auto-refresh-toggle">
+        <input type="checkbox" [checked]="autoRefresh()" (change)="toggleAutoRefresh()" />
+        <span>Auto-refresh (10s)</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Alert ──────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ error() }}
+      </div>
+    </div>
+  }
+
+  <!-- ── Summary KPI cards ──────────────────────────────────────── -->
+  @if (summary(); as s) {
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.totalRequests | number }}</div>
+        <div class="kpi-label">Total Requests</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value kpi-value--success">{{ s.successRate | number:'1.1-1' }}%</div>
+        <div class="kpi-label">Success Rate</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.avgLatencyMs | number:'1.0-0' }} ms</div>
+        <div class="kpi-label">Avg Latency</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" [class.kpi-value--danger]="s.totalErrors > 0">
+          {{ s.totalErrors | number }}
+        </div>
+        <div class="kpi-label">Total Errors</div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Table card ─────────────────────────────────────────────── -->
+  <div class="table-card">
+
+    @if (loading()) {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Route ID</th>
+              <th>Requests</th>
+              <th>Avg Latency</th>
+              <th>Max Latency</th>
+              <th>Errors</th>
+              <th>Error Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="skeleton-row">
+                <td><span class="sk sk--lg"></span></td>
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--xs"></span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (!loading() && metrics().length === 0) {
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        <p class="empty-title">No route metrics</p>
+        <p class="empty-sub">No traffic has been recorded yet</p>
+      </div>
+    }
+
+    @if (!loading() && metrics().length > 0) {
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Route ID</th>
+              <th>Requests</th>
+              <th>Avg Latency</th>
+              <th>Max Latency</th>
+              <th>Errors</th>
+              <th>Error Rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (metric of metrics(); track metric.routeId) {
+              <tr class="data-row">
+                <td class="cell-mono">{{ metric.routeId }}</td>
+                <td>{{ metric.totalRequests | number }}</td>
+                <td>
+                  <div class="latency-cell">
+                    <span>{{ metric.avgLatencyMs | number:'1.0-0' }} ms</span>
+                    <div class="latency-track">
+                      <div class="latency-bar" [style.width.%]="getLatencyBarWidth(metric.avgLatencyMs)"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="latency-cell">
+                    <span>{{ metric.maxLatencyMs | number:'1.0-0' }} ms</span>
+                    <div class="latency-track">
+                      <div class="latency-bar" [style.width.%]="getLatencyBarWidth(metric.maxLatencyMs)"></div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ metric.errorCount | number }}</td>
+                <td>
+                  <span class="rate-badge"
+                        [class.rate-badge--green]="getErrorRate(metric) < 1"
+                        [class.rate-badge--yellow]="getErrorRate(metric) >= 1 && getErrorRate(metric) <= 5"
+                        [class.rate-badge--red]="getErrorRate(metric) > 5">
+                    {{ getErrorRate(metric) | number:'1.1-1' }}%
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+
+</div>

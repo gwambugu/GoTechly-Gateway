@@ -1,0 +1,313 @@
+server:
+  port: 3130
+logging:
+  level:
+    com.dotechly.gotechly: DEBUG
+    org.pf4j: DEBUG
+    io.netty.handler.ssl: ERROR
+    io.netty.handler.codec.http: DEBUG
+    reactor.netty.http.server: ERROR
+    org.springframework.cloud.gateway: DEBUG
+    io.github.resilience4j: DEBUG
+
+spring:
+  jackson:
+    serialization:
+      indent-output: true
+  r2dbc:
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5432/gotechlygwdb}
+    username: ${SPRING_DATASOURCE_USERNAME:gotechly_gw}
+    password: ${SPRING_DATASOURCE_PASSWORD:gotechly_gw}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/gotechlygwdb}
+    username: ${SPRING_DATASOURCE_USERNAME:gotechly_gw}
+    password: ${SPRING_DATASOURCE_PASSWORD:gotechly_gw}
+    driver-class-name: org.postgresql.Driver
+  mail:
+    host: localhost
+    port: 25
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+  cloud:
+    loadbalancer:
+      # Health-aware LB is wired via @LoadBalancerClient(name="gotechly-core",
+      # configuration=GoTechlyCoreLbConfig.class) which builds a ServiceInstanceListSupplier
+      # using insecureWebClient (mTLS + X-Internal-Api-Key). The default health-check
+      # WebClient has no client cert and would fail every probe — DO NOT switch to
+      # configurations: health-check as a replacement for that scoped config.
+      health-check:
+        initial-delay: 0s
+        interval: 10s
+        path:
+          # Core's node-drain probe, NOT /actuator/health. It answers 503 when an operator has
+          # drained that instance, and otherwise mirrors the aggregate health — so the existing
+          # "DB down => drop from the pool" behaviour is preserved, with drain added on top.
+          # Deliberately not an actuator health group: a HealthIndicator also contributes to the
+          # aggregate /actuator/health, which CoreHealthIndicator and ServiceHealthResource read,
+          # and a drained node would then look identical to a crashed one on the health page.
+          # Core permitAll's this path for the same reason /actuator/health is permitted.
+          # This interval is also the drain latency: a flip takes up to one probe to take effect.
+          #
+          # DEPLOY GoTechly-Core BEFORE THIS GATEWAY. An older Core 404s this path, which is not 2xx,
+          # so the LB would filter out every instance at once.
+          # See docs/controlled-plugin-deployment.md.
+          default: /api/v1/admin/node/routable
+    discovery:
+      client:
+        simple:
+          instances:
+            gotechly-core:
+              - uri: https://localhost:3131
+                secure: true
+              - uri: https://localhost:3132
+                secure: true
+              - uri: https://localhost:3133
+                secure: true
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 5000
+            response-timeout: 30s
+            pool:
+              type: fixed
+              max-connections: 200
+              acquire-timeout: 45000
+              max-idle-time: 60s
+            ssl:
+              # mTLS client cert for authenticating to Core
+              use-insecure-trust-manager: true   # dev only — Core cert is issued for the production hostname, not localhost
+              key-store: ${GOTECHLY_INTERNAL_KEYSTORE:classpath:config/tls/gateway-keystore.p12}
+              key-store-password: ${GOTECHLY_INTERNAL_KEYSTORE_PASSWORD:changeit}
+              key-store-type: PKCS12
+              # PEM-encoded server CA cert so Gateway trusts Core's server certificate
+              trusted-x509-certificates:
+                - classpath:config/tls/gotechly_core_internal.cer
+          default-filters:
+            - RemoveRequestHeader=Origin
+            # Retry only when the TCP connection was never established (server never
+            # saw the request), so it's safe for all HTTP methods including POST.
+            # 5xx responses are NOT retried — those indicate the server processed
+            # the request and failed, and retrying a write could double-apply it.
+            - name: Retry
+              args:
+                retries: 2
+                methods: GET,POST,PUT,DELETE,PATCH
+                series: []
+                exceptions:
+                  - java.net.ConnectException
+                  - io.netty.channel.AbstractChannel$AnnotatedConnectException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
+          routes:
+            - id: gotechly-core-payment-api
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/payment/api/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-payment
+                    fallbackUri: forward:/api/fallback/core-unavailable
+            - id: gotechly-core-api
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/api/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-portal
+                    fallbackUri: forward:/api/fallback/core-unavailable
+            - id: gotechly-core-actuator
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/actuator/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-actuator
+                    fallbackUri: forward:/api/fallback/core-unavailable
+
+resilience4j:
+  # One breaker per route, NOT one per service. A shared instance meant an RNDPS outbound
+  # degradation opened the breaker for the admin portal too — the operators lost the config UI at
+  # exactly the moment they needed it to diagnose the corridor. Payment traffic and the portal now
+  # fail independently.
+  #
+  # Every instance MUST be declared. An undeclared name falls back to Spring Cloud CircuitBreaker's
+  # defaults, whose TimeLimiter is 1 SECOND — that would fail almost every Core call.
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 50
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        # Open on slowness, not only on outright failure. Without this the breaker learns nothing
+        # until calls hit the TimeLimiter, so a corridor can hold threads for 30s a time while the
+        # breaker still reads as healthy.
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+    instances:
+      gotechly-core-payment:
+        base-config: default
+      gotechly-core-portal:
+        base-config: default
+        # The portal reads config tables. It should trip sooner and recover sooner than a payment
+        # corridor, and never be held open by one.
+        slow-call-duration-threshold: 3s
+        wait-duration-in-open-state: 5s
+      gotechly-core-actuator:
+        base-config: default
+        slow-call-duration-threshold: 3s
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 30s
+        cancel-running-future: true
+    instances:
+      gotechly-core-payment:
+        base-config: default
+      # An admin config read has no business taking 30s. Failing it fast frees the Gateway
+      # connection those calls would otherwise hold in the shared 200-connection pool.
+      gotechly-core-portal:
+        timeout-duration: 10s
+      gotechly-core-actuator:
+        timeout-duration: 5s
+
+gotechly:
+  security:
+    authentication:
+      jwt:
+        # This token must be encoded using Base64 and be at least 256 bits long (512 bits is better)
+        base64-secret: ${GOTECHLY_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET:U8YTL3R5IhXZpIb8Kjv8Cl0k5UyN6Ij5KAJIUOA1e4TxHDWFDzpcexWwIE6cZqD7Af4ZtyJVMcClAhA2AihkyQ==}
+        # Token is valid 24 hours
+        token-validity-in-seconds: 86400
+        token-validity-in-seconds-for-remember-me: 2592000
+    internal-api-key:
+      secret: ${GOTECHLY_INTERNAL_API_KEY:change-me-in-production}
+      header-name: X-Internal-Api-Key
+  gateway:
+    services:
+      - name: GoTechly-Core-1
+        base-url: https://localhost:3131
+        health-path: /actuator/health
+      - name: GoTechly-Core-2
+        base-url: https://localhost:3132
+        health-path: /actuator/health
+      - name: GoTechly-Core-3
+        base-url: https://localhost:3133
+        health-path: /actuator/health
+    multi-port:
+      # Admin/IT portal — full access to portal APIs, no payment APIs
+      webapp:
+        port: 7001
+        tls:
+          enabled: true
+          use-server-default: true
+
+      # Partner management portal — restricted to partner, transaction, and audit APIs
+      webapp-partner:
+        port: 7002
+        allowed-paths:
+          - /services/core/api/v1/partner/**
+          - /services/core/api/payment-logs/**
+          - /services/core/api/history-payment-logs/**
+          - /services/core/api/audit-logs/**
+          - /api/authenticate
+          - /api/account/**
+          - /api/portal-context
+        tls:
+          enabled: true
+          use-server-default: true
+
+      ports:
+        # External port — only exposes specific payment APIs
+        external-C2B:
+          port: 18181
+          allowed-paths:
+            - /services/core/payment/api/v1/c2b/**
+            - /services/core/payment/api/v1/legacy/inward/**
+          tls:
+            enabled: true
+            use-server-default: true
+        external-MPESA_RESULT: # <-- B2C Result Call Back
+          port: 4389
+          allowed-paths:
+            - /services/core/payment/api/v1/out/reactive/result/**       # tighten to what this port should expose
+          # UAT: Safaricom MPESA hits this port directly — replace with the actual MPESA UAT egress IPs/CIDRs from ops.
+          # PROD: when behind F5, also populate trusted-proxies with the F5's internal IP/CIDR; client IP will then be
+          #       resolved from X-Forwarded-For (only when the immediate peer matches a trusted-proxy entry).
+          allowed-ips:
+            - 192.168.9.77    # Safaricom MPESA UAT range — placeholder, confirm with ops 192.168.9.0/24
+          trusted-proxies: [ ]     # empty in UAT (direct exposure); set to F5 CIDR in PROD
+          tls:
+            enabled: true
+            use-server-default: false                    # use the custom keystore below
+            key-store: file:../certs/mpesa-b2c-result-keystore.jks
+            key-store-password: ${GOTECHLY_MPESA_KEYSTORE_PASSWORD:}
+            key-store-type: JKS
+            key-alias: ${GOTECHLY_MPESA_KEY_ALIAS:mpesa-b2c}
+            # mTLS only if you need it — otherwise drop trust-store + client-auth
+            trust-store: file:../certs/mpesa-b2c-result-trust.jks
+            trust-store-password: ${GOTECHLY_MPESA_TRUSTSTORE_PASSWORD:}
+            trust-store-type: JKS
+            client-auth: NONE                            # NONE | WANT | NEED
+            protocols: [ TLSv1.1,TLSv1.2 ]
+        # Dedicated port for Daraja inquiry result-webhooks. Safaricom POSTs the result of
+        # Account Balance / Transaction Status / Identity / agent validate / sfcverify queries
+        # to /services/core/payment/api/v1/mpesa/inquiry/callback/{type} on this port.
+        # SecurityConfiguration permits these paths (third party can't hold our JWT); the
+        # allowed-ips list + client-auth NONE are the actual security boundary.
+        external-DARAJA-CALLBACK:
+          port: 4392
+          allowed-paths:
+            - /services/core/payment/api/v1/mpesa/inquiry/callback/**
+          allowed-ips:
+            - 192.168.9.77   # Safaricom Daraja UAT range — confirm with ops
+          trusted-proxies: [ ]
+          tls:
+            enabled: true
+            use-server-default: false
+            key-store: file:../certs/mpesa-b2c-result-keystore.jks
+            key-store-password: ${GOTECHLY_MPESA_KEYSTORE_PASSWORD:}
+            key-store-type: JKS
+            key-alias: ${GOTECHLY_MPESA_KEY_ALIAS:mpesa-b2c}
+            client-auth: NONE
+            protocols: [ TLSv1.2, TLSv1.3 ]
+        external-RNDPS: # <-- RNDPS inward and outward callback
+          port: 5300
+          allowed-paths:
+            - /services/core/api/v2/rndps/inward/callbacks/fsp/**
+            - /services/core/payment/api/v1/accounts/linkage/callback/**
+          allowed-ips: [ ]
+          trusted-proxies: [ ]
+          tls:
+            enabled: false
+            use-server-default: false                    # use the custom keystore below
+            key-store: file:../certs/GoTechly-Sign.p12
+            key-store-password: ${GOTECHLY_SIGN_KEYSTORE_PASSWORD:}
+            key-store-type: PKCS12
+            key-alias: gotechly-sign
+            # mTLS only if you need it — otherwise drop trust-store + client-auth
+            trust-store: file:../certs/GoTechly-Sign.p12
+            trust-store-password: ${GOTECHLY_SIGN_KEYSTORE_PASSWORD:}
+            trust-store-type: PKCS12
+            client-auth: NONE                            # NONE | WANT | NEED
+            protocols: [ TLSv1.1,TLSv1.2 ]
+
+  mail:
+    from: gotechly@localhost
+    base-url: http://localhost:3130

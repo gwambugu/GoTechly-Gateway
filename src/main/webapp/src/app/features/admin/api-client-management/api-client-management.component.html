@@ -1,0 +1,139 @@
+<div class="api-client-container">
+  <div class="header">
+    <h1>API Clients</h1>
+    <button class="btn-primary" (click)="openCreateForm()">New API Client</button>
+  </div>
+
+  <p class="intro">
+    Machine-to-machine credentials. A client exchanges its key and secret at
+    <code>POST /api/auth/token</code> for a bearer token valid on the payment APIs.
+  </p>
+
+  @if (error()) {
+    <div class="alert alert-error">
+      {{ error() }}
+      <button class="close-btn" (click)="clearMessages()">&times;</button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success">{{ successMessage() }}</div>
+  }
+
+  <!-- One-time secret reveal. Blocks the view deliberately: dismissing it loses the secret. -->
+  @if (revealed(); as credentials) {
+    <div class="reveal">
+      <div class="reveal-header">
+        <h2>{{ revealedIsRotation() ? 'New secret issued' : 'API client created' }}</h2>
+        <span class="reveal-warning">Copy the secret now — it cannot be shown again</span>
+      </div>
+
+      <div class="credential-row">
+        <label>Client ID</label>
+        <code class="credential">{{ credentials.clientId }}</code>
+        <button class="btn-copy" (click)="copy(credentials.clientId, 'id')">
+          {{ copied() === 'id' ? 'Copied' : 'Copy' }}
+        </button>
+      </div>
+
+      <div class="credential-row">
+        <label>Client Secret</label>
+        <code class="credential secret">{{ credentials.clientSecret }}</code>
+        <button class="btn-copy" (click)="copy(credentials.clientSecret, 'secret')">
+          {{ copied() === 'secret' ? 'Copied' : 'Copy' }}
+        </button>
+      </div>
+
+      @if (revealedIsRotation()) {
+        <p class="reveal-note">The previous secret stopped working the moment this one was issued.</p>
+      }
+
+      <button class="btn-primary" (click)="dismissReveal()">I have stored the secret</button>
+    </div>
+  }
+
+  @if (showCreateForm()) {
+    <div class="create-form">
+      <h2>New API Client</h2>
+
+      <div class="form-row">
+        <label for="name">Name <span class="required">*</span></label>
+        <input id="name" type="text" [(ngModel)]="form.name" placeholder="e.g. Core Banking Integration" />
+      </div>
+
+      <div class="form-row">
+        <label for="description">Description</label>
+        <input id="description" type="text" [(ngModel)]="form.description" placeholder="What uses this credential?" />
+      </div>
+
+      <div class="form-row">
+        <label for="expiresAt">Expires</label>
+        <input id="expiresAt" type="datetime-local" [(ngModel)]="form.expiresAt" />
+        <span class="hint">Leave empty for a credential that never expires on its own.</span>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-secondary" (click)="cancelCreate()">Cancel</button>
+        <button class="btn-primary" (click)="create()" [disabled]="submitting()">
+          {{ submitting() ? 'Creating...' : 'Create' }}
+        </button>
+      </div>
+    </div>
+  }
+
+  <div class="tabs">
+    <button class="tab" [class.active]="filter() === 'all'" (click)="setFilter('all')">
+      All <span class="badge">{{ clients().length }}</span>
+    </button>
+    <button class="tab" [class.active]="filter() === 'active'" (click)="setFilter('active')">Active</button>
+    <button class="tab" [class.active]="filter() === 'revoked'" (click)="setFilter('revoked')">Revoked / Expired</button>
+  </div>
+
+  <div class="content">
+    @if (loading()) {
+      <div class="loading">Loading...</div>
+    } @else if (filteredClients().length === 0) {
+      <div class="empty-state">No API clients yet</div>
+    } @else {
+      <div class="client-list">
+        @for (client of filteredClients(); track client.id) {
+          <div class="client-card" [class.inactive]="!client.enabled || client.expired">
+            <div class="client-main">
+              <div class="client-title">
+                <h3>{{ client.name }}</h3>
+                <span class="status" [class]="statusOf(client).css">{{ statusOf(client).label }}</span>
+              </div>
+              @if (client.description) {
+                <p class="client-description">{{ client.description }}</p>
+              }
+              <code class="client-id">{{ client.clientId }}</code>
+            </div>
+
+            <div class="client-meta">
+              <div><span class="meta-label">Created</span> {{ client.createdDate | date: 'short' }}</div>
+              @if (client.createdBy) {
+                <div><span class="meta-label">By</span> {{ client.createdBy }}</div>
+              }
+              <div>
+                <span class="meta-label">Last used</span>
+                {{ client.lastUsedDate ? (client.lastUsedDate | date: 'short') : 'never' }}
+              </div>
+              @if (client.expiresAt) {
+                <div><span class="meta-label">Expires</span> {{ client.expiresAt | date: 'short' }}</div>
+              }
+            </div>
+
+            <div class="client-actions">
+              <button class="btn-secondary" (click)="rotate(client)">Rotate Secret</button>
+              @if (client.enabled) {
+                <button class="btn-danger" (click)="revoke(client)">Revoke</button>
+              } @else {
+                <button class="btn-secondary" (click)="enable(client)">Enable</button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

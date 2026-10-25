@@ -1,0 +1,20 @@
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-brand">
+      <img src="gotechly-logo.svg" alt="GoTechly" class="brand-icon-img">
+      <span class="brand-text">GoTechly</span>
+    </div>
+
+    <div class="footer-links">
+      <a routerLink="/">Home</a>
+      @if (!isLoggedIn) {
+        <a routerLink="/login">Login</a>
+        <a routerLink="/register">Register</a>
+      }
+    </div>
+
+    <div class="footer-copyright">
+      &copy; {{ currentYear }} GoTechly. All rights reserved.
+    </div>
+  </div>
+</footer>

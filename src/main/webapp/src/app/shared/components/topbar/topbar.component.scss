@@ -1,0 +1,211 @@
+@import 'content/scss/variables';
+
+// ── Topbar shell ───────────────────────────────────────────────────────────────
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 $sp-5;
+  background: $surface;
+  border-bottom: 1px solid $border;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+  gap: $sp-4;
+  box-shadow: $shadow-xs;
+}
+
+// ── Left side ──────────────────────────────────────────────────────────────────
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+  min-width: 0;
+}
+
+// ── Hamburger (mobile only — hidden on desktop) ────────────────────────────────
+.hamburger-btn {
+  display: none;           // shown via media query below
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: none;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  color: $text-muted;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover {
+    background: $gray-100;
+    color: $text;
+  }
+}
+
+// ── Brand name (mobile only) ───────────────────────────────────────────────────
+.topbar-brand {
+  display: none;           // shown via media query below
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-family: $font;
+  color: $text;
+  white-space: nowrap;
+}
+
+// ── Quick nav links ────────────────────────────────────────────────────────────
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.topbar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 6px $sp-3;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  color: $text-muted;
+  border-radius: $radius-sm;
+  transition: background $duration $ease, color $duration $ease;
+  white-space: nowrap;
+  position: relative;
+
+  svg { flex-shrink: 0; }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;          // sits flush with topbar border-bottom
+    left: $sp-3;
+    right: $sp-3;
+    height: 2px;
+    background: $primary;
+    border-radius: 1px 1px 0 0;
+    transform: scaleX(0);
+    transition: transform $duration $ease;
+  }
+
+  &:hover {
+    background: $gray-50;
+    color: $text;
+  }
+
+  &.active {
+    color: $primary;
+    font-weight: 600;
+
+    &::after { transform: scaleX(1); }
+  }
+}
+
+// ── Right side ─────────────────────────────────────────────────────────────────
+.topbar-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+// ── Account cluster ────────────────────────────────────────────────────────────
+.account {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
+
+.account-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: $primary-light;
+  color: $primary;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: $font;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.account-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  color: $text;
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Logout button ──────────────────────────────────────────────────────────────
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 5px $sp-3;
+  background: transparent;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  color: $text-muted;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background $duration $ease, color $duration $ease, border-color $duration $ease;
+
+  &:hover {
+    background: $danger-light;
+    color: $danger;
+    border-color: $danger-border;
+  }
+}
+
+// ── Login button ───────────────────────────────────────────────────────────────
+.btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 5px $sp-3;
+  background: $primary;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background $duration $ease, box-shadow $duration $ease;
+
+  &:hover {
+    background: $primary-hover;
+    box-shadow: $shadow-sm;
+  }
+}
+
+// ── Responsive ─────────────────────────────────────────────────────────────────
+@media (max-width: 1023px) {
+  // On mobile the sidenav slides off-screen — show hamburger and brand
+  .hamburger-btn { display: flex; }
+  .topbar-brand  { display: block; }
+
+  // Hide the nav links on mobile — they are all accessible via the sidenav drawer
+  .topbar-nav { display: none; }
+
+  // Compact account section — hide the name, keep avatar + logout
+  .account-name { display: none; }
+}
+
+@media (max-width: 480px) {
+  .topbar { padding: 0 $sp-3; }
+}

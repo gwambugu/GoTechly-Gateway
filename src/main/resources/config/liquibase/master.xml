@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260415000000_added_shared_sequence.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260619100000_add_user_auth_source.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260619100100_widen_user_login.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20260813120000_add_api_client.xml" relativeToChangelogFile="false"/>
+</databaseChangeLog>

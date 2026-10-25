@@ -1,0 +1,202 @@
+<div class="page">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <h1 class="page-title">Plugin Management</h1>
+  </div>
+
+  <!-- ── Alert ──────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ error() }}
+      </div>
+      <button class="alert-close" (click)="error.set('')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  }
+
+  <!-- ── Filter bar ─────────────────────────────────────────────── -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <input type="text" class="search-input"
+             placeholder="Search plugins, payment types, handlers…"
+             [ngModel]="searchTerm()"
+             (ngModelChange)="setSearch($event)" />
+    </div>
+    <div class="filter-group">
+      <select class="filter-select" [ngModel]="modeFilter()" (ngModelChange)="setModeFilter($event)">
+        <option value="ALL">All Modes</option>
+        <option value="INWARD">Inward</option>
+        <option value="OUTWARD">Outward</option>
+      </select>
+      <select class="filter-select" [ngModel]="typeFilter()" (ngModelChange)="setTypeFilter($event)">
+        <option value="ALL">All Types</option>
+        @for (type of availableTypes(); track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+      <select class="filter-select" [ngModel]="statusFilter()" (ngModelChange)="setStatusFilter($event)">
+        <option value="ALL">All Status</option>
+        <option value="ENABLED">Enabled</option>
+        <option value="DISABLED">Disabled</option>
+      </select>
+      @if (hasActiveFilters) {
+        <button class="btn-clear" (click)="clearFilters()">Clear</button>
+      }
+    </div>
+  </div>
+
+  <!-- ── Loading skeleton ───────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="plugin-list">
+      @for (i of [1,2,3]; track i) {
+        <div class="plugin-card">
+          <div class="plugin-header">
+            <div class="plugin-info">
+              <span class="sk sk--name"></span>
+              <div class="plugin-meta" style="margin-top: 6px;">
+                <span class="sk sk--tag"></span>
+                <span class="sk sk--count"></span>
+              </div>
+            </div>
+            <span class="sk sk--btn"></span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── Empty states ───────────────────────────────────────────── -->
+  @if (!loading() && plugins().length === 0) {
+    <div class="empty-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+      </svg>
+      <p class="empty-title">No plugins deployed</p>
+      <p class="empty-sub">Drop a signed JAR into the plugins folder to get started</p>
+    </div>
+  }
+
+  @if (!loading() && plugins().length > 0 && filteredPlugins().length === 0) {
+    <div class="empty-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <p class="empty-title">No plugins match filters</p>
+      <p class="empty-sub">Try adjusting your search or filter criteria</p>
+    </div>
+  }
+
+  <!-- ── Plugin list ────────────────────────────────────────────── -->
+  @if (!loading() && filteredPlugins().length > 0) {
+    <div class="plugin-list">
+      @for (plugin of pagedPlugins(); track plugin.jarFileName) {
+        <div class="plugin-card" [class.plugin-card--expanded]="expandedPlugin() === plugin.jarFileName"
+             (click)="toggleExpanded(plugin.jarFileName)">
+
+          <div class="plugin-header">
+            <div class="plugin-info">
+              <div class="jar-name">{{ plugin.jarFileName }}</div>
+              <div class="plugin-meta">
+                <div class="payment-types">
+                  @for (pt of plugin.paymentTypes; track pt) {
+                    <span class="payment-tag" [class.payment-tag--disabled]="isDisabled(pt)">{{ pt }}</span>
+                  }
+                </div>
+                <span class="handler-count">{{ plugin.handlers.length }} handler{{ plugin.handlers.length !== 1 ? 's' : '' }}</span>
+              </div>
+            </div>
+
+            <div class="plugin-actions" (click)="$event.stopPropagation()">
+              @for (pt of plugin.paymentTypes; track pt) {
+                <button class="btn-toggle"
+                        [class.btn-toggle--enabled]="!isDisabled(pt)"
+                        [class.btn-toggle--disabled]="isDisabled(pt)"
+                        [disabled]="togglingType() === pt"
+                        (click)="togglePlugin(pt, $event)">
+                  @if (togglingType() === pt) {
+                    <svg class="spin" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                    </svg>
+                  } @else if (isDisabled(pt)) {
+                    Enable {{ pt }}
+                  } @else {
+                    Disable {{ pt }}
+                  }
+                </button>
+              }
+            </div>
+
+            <svg class="expand-chevron" [class.expand-chevron--open]="expandedPlugin() === plugin.jarFileName"
+                 xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <!-- ── Handler detail table ──────────────────────────── -->
+          @if (expandedPlugin() === plugin.jarFileName) {
+            <div class="handler-details">
+              <table class="handler-table">
+                <thead>
+                  <tr>
+                    <th>Handler Type</th>
+                    <th>Class Name</th>
+                    <th>Version</th>
+                    <th>Mode</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (handler of plugin.handlers; track handler.handlerClassName) {
+                    <tr [class.handler-row--disabled]="isDisabled(handler.paymentType)">
+                      <td>{{ handler.handlerType }}</td>
+                      <td class="cell-mono">{{ handler.handlerClassName }}</td>
+                      <td>{{ handler.version }}</td>
+                      <td>
+                        <span class="mode-badge"
+                              [class.mode-badge--inward]="handler.mode === 'INWARD'"
+                              [class.mode-badge--outward]="handler.mode === 'OUTWARD'">
+                          {{ handler.mode }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalItems]="filteredPlugins().length"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)" />
+  }
+
+</div>

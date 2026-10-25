@@ -1,0 +1,574 @@
+<div class="page">
+
+  <!-- ── Alerts ────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ error() }}
+      </div>
+      <button class="alert-close" (click)="clearMessages()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        {{ successMessage() }}
+      </div>
+    </div>
+  }
+
+  @if (loading() && !partner()) {
+    <div class="page-skeleton">
+      <div class="sk sk--title"></div>
+      <div class="sk sk--subtitle"></div>
+    </div>
+  }
+
+  @if (partner(); as p) {
+
+    <!-- ── Page header ──────────────────────────────────────────── -->
+    <div class="detail-header">
+      <a routerLink="/partners" class="back-link">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        Partners
+      </a>
+      <div class="detail-title-row">
+        <div class="detail-title-left">
+          <h1 class="detail-title">{{ p.legalName }}</h1>
+          <span class="status-pill" [ngClass]="getStatusClass(p.status)">
+            {{ p.status ? statusLabels[p.status] : '' }}
+          </span>
+          @if (p.partnerType) {
+            <span class="type-badge">{{ typeLabels[p.partnerType] }}</span>
+          }
+        </div>
+        <div class="detail-title-actions">
+          @if (isMaker() && p.status === 'PENDING_APPROVAL') {
+            <a [routerLink]="['/partners', p.id, 'edit']" class="btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Edit
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Tab navigation ──────────────────────────────────────── -->
+    <div class="tab-nav">
+      <button class="tab" [class.active]="activeTab() === 'details'"  (click)="setActiveTab('details')">Details</button>
+      <button class="tab" [class.active]="activeTab() === 'accounts'" (click)="setActiveTab('accounts')">Accounts</button>
+      <button class="tab" [class.active]="activeTab() === 'services'" (click)="setActiveTab('services')">Services</button>
+      <button class="tab" [class.active]="activeTab() === 'limits'"   (click)="setActiveTab('limits')">Limits</button>
+      <button class="tab" [class.active]="activeTab() === 'configs'"  (click)="setActiveTab('configs')">Configs</button>
+    </div>
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- Details Tab                                                 -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'details') {
+      <div class="detail-grid">
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <span class="info-card-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 3h-8l-2 4h12z"></path>
+              </svg>
+            </span>
+            <h3>Basic Information</h3>
+          </div>
+          <div class="info-rows">
+            <div class="info-row"><span class="info-label">Partner Code</span><span class="info-value mono">{{ p.partnerCode || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Legal Name</span><span class="info-value">{{ p.legalName }}</span></div>
+            <div class="info-row"><span class="info-label">Short Name</span><span class="info-value">{{ p.clientShortName || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Agent ID</span><span class="info-value mono">{{ p.agentId || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Type</span><span class="info-value">{{ p.partnerType ? typeLabels[p.partnerType] : '—' }}</span></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <span class="info-card-icon info-card-icon--contact">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </span>
+            <h3>Contact</h3>
+          </div>
+          <div class="info-rows">
+            <div class="info-row"><span class="info-label">Email</span><span class="info-value">{{ p.contactEmail || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Phone</span><span class="info-value">{{ p.contactPhone || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">IP Whitelist</span><span class="info-value mono">{{ p.ipWhitelist || '—' }}</span></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <span class="info-card-icon info-card-icon--compliance">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </span>
+            <h3>Compliance</h3>
+          </div>
+          <div class="info-rows">
+            <div class="info-row"><span class="info-label">KYC Status</span>
+              <span class="info-value">
+                @if (p.kycStatus) {
+                  <span class="kyc-badge" [class.kyc-verified]="p.kycStatus === 'VERIFIED'"
+                        [class.kyc-expired]="p.kycStatus === 'EXPIRED'">{{ p.kycStatus }}</span>
+                } @else { — }
+              </span>
+            </div>
+            <div class="info-row"><span class="info-label">KYC Expiry</span><span class="info-value">{{ p.kycExpiryDate || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Settlement</span><span class="info-value">{{ p.settlementCycle || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Contract Start</span><span class="info-value">{{ p.contractStartDate || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Contract End</span><span class="info-value">{{ p.contractEndDate || '—' }}</span></div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <span class="info-card-icon info-card-icon--workflow">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                   fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+            </span>
+            <h3>Workflow</h3>
+          </div>
+          <div class="info-rows">
+            <div class="info-row"><span class="info-label">Maker</span><span class="info-value mono">{{ p.makerId || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Maker Date</span><span class="info-value">{{ p.makerDate || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Checker</span><span class="info-value mono">{{ p.checkerId || '—' }}</span></div>
+            <div class="info-row"><span class="info-label">Checker Date</span><span class="info-value">{{ p.checkerDate || '—' }}</span></div>
+            @if (p.checkerRemarks) {
+              <div class="info-row"><span class="info-label">Remarks</span><span class="info-value">{{ p.checkerRemarks }}</span></div>
+            }
+            <div class="info-row">
+              <span class="info-label">Certificate</span>
+              <span class="info-value">
+                @if (p.clientCertificate) {
+                  <span class="cert-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Uploaded
+                  </span>
+                } @else { Not provided }
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- Accounts Tab                                                -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'accounts') {
+      <div class="tab-section">
+        @if (isMaker()) {
+          <button class="btn-add" (click)="newAccount()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Account
+          </button>
+        }
+
+        @if (showAccountForm()) {
+          <div class="inline-form">
+            <div class="inline-form-header">
+              <h4>{{ editingAccount.id ? 'Edit Account' : 'New Account' }}</h4>
+              <button class="icon-btn-sm" (click)="cancelForm('account')" title="Cancel">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            <div class="form-grid form-grid--3">
+              <div class="fg">
+                <label>Account Type</label>
+                <select [(ngModel)]="editingAccount.accountType">
+                  @for (type of accountTypes; track type) {
+                    <option [value]="type">{{ accountTypeLabels[type] }}</option>
+                  }
+                </select>
+              </div>
+              <div class="fg">
+                <label>Account Number</label>
+                <input type="text" [(ngModel)]="editingAccount.accountNumber" (blur)="checkAccountUniqueness()" />
+                @if (accountUniquenessError() && !editingAccount.id) {
+                  <span class="field-error">Account number already exists</span>
+                }
+              </div>
+              <div class="fg">
+                <label>Account Name</label>
+                <input type="text" [(ngModel)]="editingAccount.accountName" />
+              </div>
+              <div class="fg">
+                <label>Bank Name</label>
+                <input type="text" [(ngModel)]="editingAccount.bankName" />
+              </div>
+              <div class="fg">
+                <label>Bank Code</label>
+                <input type="text" [(ngModel)]="editingAccount.bankCode" />
+              </div>
+              <div class="fg">
+                <label>Branch Code</label>
+                <input type="text" [(ngModel)]="editingAccount.branchCode" />
+              </div>
+              <div class="fg">
+                <label>Currency</label>
+                <input type="text" [(ngModel)]="editingAccount.currencyCode" />
+              </div>
+              <div class="fg fg--checkbox">
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="editingAccount.isPrimary" />
+                  <span>Primary Account</span>
+                </label>
+              </div>
+            </div>
+            <div class="inline-form-actions">
+              <button class="btn-ghost" (click)="cancelForm('account')">Cancel</button>
+              <button class="btn-primary" (click)="saveAccount()">Save Account</button>
+            </div>
+          </div>
+        }
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr>
+                <th>Type</th><th>Account Number</th><th>Account Name</th>
+                <th>Bank</th><th>Currency</th><th>Primary</th>
+                @if (isMaker()) { <th>Actions</th> }
+              </tr></thead>
+              <tbody>
+                @for (account of accounts(); track account.id) {
+                  <tr>
+                    <td>{{ account.accountType ? accountTypeLabels[account.accountType] : '—' }}</td>
+                    <td class="cell-mono">{{ account.accountNumber }}</td>
+                    <td>{{ account.accountName }}</td>
+                    <td class="cell-secondary">{{ account.bankName }}</td>
+                    <td>{{ account.currencyCode }}</td>
+                    <td>
+                      @if (account.isPrimary) {
+                        <span class="primary-badge">Primary</span>
+                      } @else {
+                        <span class="cell-muted">No</span>
+                      }
+                    </td>
+                    @if (isMaker()) {
+                      <td>
+                        <div class="row-actions">
+                          <button class="icon-btn icon-btn--edit" (click)="editAccount(account)" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                          <button class="icon-btn icon-btn--delete" (click)="deleteAccount(account)" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                }
+                @if (accounts().length === 0 && !loading()) {
+                  <tr><td [attr.colspan]="isMaker() ? 7 : 6"><div class="empty-state"><p class="empty-title">No accounts configured</p></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- Services Tab                                                -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'services') {
+      <div class="tab-section">
+        @if (isMaker()) {
+          <button class="btn-add" (click)="newService()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Service
+          </button>
+        }
+
+        @if (showServiceForm()) {
+          <div class="inline-form">
+            <div class="inline-form-header">
+              <h4>{{ editingService.id ? 'Edit Service' : 'New Service' }}</h4>
+              <button class="icon-btn-sm" (click)="cancelForm('service')" title="Cancel"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="form-grid form-grid--3">
+              <div class="fg">
+                <label>Payment Type</label>
+                <input type="text" [(ngModel)]="editingService.paymentType" placeholder="e.g., MPESA" />
+              </div>
+              <div class="fg">
+                <label>Direction</label>
+                <select [(ngModel)]="editingService.direction">
+                  @for (dir of directions; track dir) { <option [value]="dir">{{ dir }}</option> }
+                </select>
+              </div>
+              <div class="fg">
+                <label>Status</label>
+                <select [(ngModel)]="editingService.status">
+                  <option value="ACTIVE">Active</option>
+                  <option value="SUSPENDED">Suspended</option>
+                </select>
+              </div>
+            </div>
+            <div class="inline-form-actions">
+              <button class="btn-ghost" (click)="cancelForm('service')">Cancel</button>
+              <button class="btn-primary" (click)="saveService()">Save Service</button>
+            </div>
+          </div>
+        }
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr>
+                <th>Payment Type</th><th>Direction</th><th>Status</th>
+                @if (isMaker()) { <th>Actions</th> }
+              </tr></thead>
+              <tbody>
+                @for (svc of services(); track svc.id) {
+                  <tr>
+                    <td><span class="type-badge">{{ svc.paymentType }}</span></td>
+                    <td>{{ svc.direction }}</td>
+                    <td>
+                      <span class="status-pill"
+                            [class.status-active]="svc.status === 'ACTIVE'"
+                            [class.status-suspended]="svc.status !== 'ACTIVE'">
+                        {{ svc.status || '—' }}
+                      </span>
+                    </td>
+                    @if (isMaker()) {
+                      <td>
+                        <div class="row-actions">
+                          <button class="icon-btn icon-btn--edit" (click)="editService(svc)" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                          <button class="icon-btn icon-btn--delete" (click)="deleteService(svc)" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                }
+                @if (services().length === 0 && !loading()) {
+                  <tr><td [attr.colspan]="isMaker() ? 4 : 3"><div class="empty-state"><p class="empty-title">No services assigned</p></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- Limits Tab                                                  -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'limits') {
+      <div class="tab-section">
+        @if (isMaker()) {
+          <button class="btn-add" (click)="newLimit()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Limit
+          </button>
+        }
+
+        @if (showLimitForm()) {
+          <div class="inline-form">
+            <div class="inline-form-header">
+              <h4>{{ editingLimit.id ? 'Edit Limit' : 'New Limit' }}</h4>
+              <button class="icon-btn-sm" (click)="cancelForm('limit')" title="Cancel"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="form-grid form-grid--3">
+              <div class="fg"><label>Payment Type</label><input type="text" [(ngModel)]="editingLimit.paymentType" placeholder="e.g., MPESA" /></div>
+              <div class="fg"><label>Direction</label><select [(ngModel)]="editingLimit.direction">@for (dir of directions; track dir) { <option [value]="dir">{{ dir }}</option> }</select></div>
+              <div class="fg"><label>Currency</label><input type="text" [(ngModel)]="editingLimit.currencyCode" /></div>
+            </div>
+            <div class="form-section-label">Per-Transaction Limits</div>
+            <div class="form-grid form-grid--2">
+              <div class="fg"><label>Min Amount</label><input type="number" [(ngModel)]="editingLimit.minAmount" /></div>
+              <div class="fg"><label>Max Amount</label><input type="number" [(ngModel)]="editingLimit.maxAmount" /></div>
+            </div>
+            <div class="form-section-label">Daily Limits</div>
+            <div class="form-grid form-grid--2">
+              <div class="fg"><label>Daily Amount</label><input type="number" [(ngModel)]="editingLimit.dailyAmountLimit" /></div>
+              <div class="fg"><label>Daily Count</label><input type="number" [(ngModel)]="editingLimit.dailyCountLimit" /></div>
+            </div>
+            <div class="form-section-label">Monthly Limits</div>
+            <div class="form-grid form-grid--2">
+              <div class="fg"><label>Monthly Amount</label><input type="number" [(ngModel)]="editingLimit.monthlyAmountLimit" /></div>
+              <div class="fg"><label>Monthly Count</label><input type="number" [(ngModel)]="editingLimit.monthlyCountLimit" /></div>
+            </div>
+            <div class="form-section-label">Fees</div>
+            <div class="form-grid form-grid--2">
+              <div class="fg"><label>Fee Amount</label><input type="number" [(ngModel)]="editingLimit.feeAmount" step="0.01" /></div>
+              <div class="fg"><label>Fee Percentage (%)</label><input type="number" [(ngModel)]="editingLimit.feePercentage" step="0.01" /></div>
+            </div>
+            <div class="inline-form-actions">
+              <button class="btn-ghost" (click)="cancelForm('limit')">Cancel</button>
+              <button class="btn-primary" (click)="saveLimit()">Save Limit</button>
+            </div>
+          </div>
+        }
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr>
+                <th>Type</th><th>Direction</th><th>Currency</th>
+                <th class="cell-right">Min</th><th class="cell-right">Max</th>
+                <th class="cell-right">Daily Limit</th><th class="cell-right">Monthly Limit</th>
+                <th class="cell-right">Fee</th>
+                @if (isMaker()) { <th>Actions</th> }
+              </tr></thead>
+              <tbody>
+                @for (limit of limits(); track limit.id) {
+                  <tr>
+                    <td><span class="type-badge">{{ limit.paymentType }}</span></td>
+                    <td>{{ limit.direction }}</td>
+                    <td>{{ limit.currencyCode }}</td>
+                    <td class="cell-num">{{ limit.minAmount | number }}</td>
+                    <td class="cell-num">{{ limit.maxAmount | number }}</td>
+                    <td class="cell-num">{{ limit.dailyAmountLimit | number }}<span class="cell-count"> / {{ limit.dailyCountLimit }}</span></td>
+                    <td class="cell-num">{{ limit.monthlyAmountLimit | number }}<span class="cell-count"> / {{ limit.monthlyCountLimit }}</span></td>
+                    <td class="cell-num">
+                      @if (limit.feeAmount) { {{ limit.feeAmount | number:'1.2-2' }} }
+                      @if (limit.feeAmount && limit.feePercentage) { + }
+                      @if (limit.feePercentage) { {{ limit.feePercentage }}% }
+                      @if (!limit.feeAmount && !limit.feePercentage) { — }
+                    </td>
+                    @if (isMaker()) {
+                      <td>
+                        <div class="row-actions">
+                          <button class="icon-btn icon-btn--edit" (click)="editLimit(limit)" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                          <button class="icon-btn icon-btn--delete" (click)="deleteLimit(limit)" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                }
+                @if (limits().length === 0 && !loading()) {
+                  <tr><td [attr.colspan]="isMaker() ? 9 : 8"><div class="empty-state"><p class="empty-title">No transaction limits configured</p></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ────────────────────────────────────────────────────────── -->
+    <!-- Configs Tab                                                 -->
+    <!-- ────────────────────────────────────────────────────────── -->
+    @if (activeTab() === 'configs') {
+      <div class="tab-section">
+        @if (isMaker()) {
+          <button class="btn-add" (click)="newConfig()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Add Config
+          </button>
+        }
+
+        @if (showConfigForm()) {
+          <div class="inline-form">
+            <div class="inline-form-header">
+              <h4>{{ editingConfig.id ? 'Edit Config' : 'New Config' }}</h4>
+              <button class="icon-btn-sm" (click)="cancelForm('config')" title="Cancel"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+            </div>
+            <div class="form-grid form-grid--2">
+              <div class="fg"><label>Parameter Name</label><input type="text" [(ngModel)]="editingConfig.paramName" /></div>
+              <div class="fg"><label>Parameter Value</label><input type="text" [(ngModel)]="editingConfig.paramValue" /></div>
+              <div class="fg fg--wide"><label>Description</label><input type="text" [(ngModel)]="editingConfig.paramDescription" /></div>
+            </div>
+            <div class="inline-form-actions">
+              <button class="btn-ghost" (click)="cancelForm('config')">Cancel</button>
+              <button class="btn-primary" (click)="saveConfig()">Save Config</button>
+            </div>
+          </div>
+        }
+
+        <div class="table-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead><tr>
+                <th>Name</th><th>Value</th><th>Description</th>
+                @if (isMaker()) { <th>Actions</th> }
+              </tr></thead>
+              <tbody>
+                @for (config of configs(); track config.id) {
+                  <tr>
+                    <td class="cell-mono">{{ config.paramName }}</td>
+                    <td>{{ config.paramValue }}</td>
+                    <td class="cell-secondary">{{ config.paramDescription }}</td>
+                    @if (isMaker()) {
+                      <td>
+                        <div class="row-actions">
+                          <button class="icon-btn icon-btn--edit" (click)="editConfig(config)" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                          <button class="icon-btn icon-btn--delete" (click)="deleteConfig(config)" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path></svg></button>
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                }
+                @if (configs().length === 0 && !loading()) {
+                  <tr><td [attr.colspan]="isMaker() ? 4 : 3"><div class="empty-state"><p class="empty-title">No configurations</p></div></td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+  }
+</div>

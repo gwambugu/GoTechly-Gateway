@@ -1,0 +1,449 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ───────────────────────────────────────────────────────────────
+.api-client-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: $text;
+    letter-spacing: -0.02em;
+    margin: 0;
+    font-family: $font;
+  }
+}
+
+.intro {
+  font-size: 0.8125rem;
+  color: $text-muted;
+  margin: 0;
+  font-family: $font;
+
+  code {
+    background: $gray-100;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    font-family: $font-mono;
+    color: $text;
+  }
+}
+
+// ── Alerts ─────────────────────────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+
+  &.alert-error   { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+  &.alert-success { background: $success-light; color: $success; border: 1px solid $success-border; }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.125rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  font-family: $font;
+  &:hover { opacity: 1; }
+}
+
+// ── One-time secret reveal ─────────────────────────────────────────────────────
+.reveal {
+  border: 2px solid $warning-border;
+  background: $warning-light;
+  border-radius: $radius;
+  padding: $sp-5;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+
+  .reveal-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $sp-3;
+    flex-wrap: wrap;
+
+    h2 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: $warning;
+      margin: 0;
+      font-family: $font;
+    }
+
+    .reveal-warning {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: $warning;
+      font-family: $font;
+    }
+  }
+
+  .credential-row {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    flex-wrap: wrap;
+
+    label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: $text-muted;
+      min-width: 92px;
+      font-family: $font;
+    }
+
+    .credential {
+      flex: 1;
+      min-width: 240px;
+      background: $surface;
+      border: 1px solid $warning-border;
+      border-radius: $radius-sm;
+      padding: 7px 10px;
+      font-family: $font-mono;
+      font-size: 0.75rem;
+      color: $text;
+      overflow-wrap: anywhere;
+
+      &.secret { font-weight: 600; }
+    }
+  }
+
+  .reveal-note {
+    font-size: 0.75rem;
+    color: $text-muted;
+    margin: 0;
+    font-family: $font;
+  }
+
+  .btn-copy {
+    background: $surface;
+    border: 1px solid $warning-border;
+    color: $warning;
+    border-radius: $radius-sm;
+    padding: 5px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: $font;
+    cursor: pointer;
+    transition: background $duration $ease;
+
+    &:hover { background: $warning-light; }
+  }
+}
+
+// ── Create form ────────────────────────────────────────────────────────────────
+.create-form {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $sp-5;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+
+  h2 {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    margin: 0;
+    color: $text;
+    font-family: $font;
+  }
+
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-1;
+
+    label {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: $text;
+      font-family: $font;
+
+      .required { color: $danger; }
+    }
+
+    input {
+      border: 1px solid $gray-300;
+      border-radius: $radius-sm;
+      padding: 7px 10px;
+      font-size: 0.8125rem;
+      font-family: $font;
+      color: $text;
+      outline: none;
+      transition: border-color $duration $ease, box-shadow $duration $ease;
+
+      &:focus {
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba($primary, 0.10);
+      }
+    }
+
+    .hint {
+      font-size: 0.75rem;
+      color: $text-subtle;
+      font-family: $font;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $sp-2;
+  }
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────────
+.tabs {
+  display: flex;
+  border-bottom: 2px solid $border;
+  gap: 0;
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: $sp-2;
+    padding: $sp-2 $sp-4;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: $font;
+    color: $text-muted;
+    cursor: pointer;
+    transition: color $duration $ease, border-color $duration $ease;
+    white-space: nowrap;
+
+    &:hover { color: $text; }
+
+    &.active {
+      color: $primary;
+      border-bottom-color: $primary;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 999px;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      background: $gray-200;
+      color: $text-muted;
+    }
+  }
+}
+
+// ── Table card ─────────────────────────────────────────────────────────────────
+.content {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.loading,
+.empty-state {
+  text-align: center;
+  padding: $sp-12 $sp-8;
+  color: $text-subtle;
+  font-size: 0.8125rem;
+  font-family: $font;
+}
+
+// ── Client list ────────────────────────────────────────────────────────────────
+.client-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.client-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: $sp-4;
+  padding: $sp-4 $sp-5;
+  border-top: 1px solid $gray-100;
+  flex-wrap: wrap;
+  transition: background $duration $ease;
+
+  &:first-child { border-top: none; }
+  &:hover { background: $gray-50; }
+
+  &.inactive {
+    opacity: 0.65;
+  }
+
+  .client-main {
+    flex: 1;
+    min-width: 240px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    .client-title {
+      display: flex;
+      align-items: center;
+      gap: $sp-2;
+
+      h3 {
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0;
+        color: $text;
+        font-family: $font;
+      }
+    }
+
+    .client-description {
+      font-size: 0.75rem;
+      color: $text-muted;
+      margin: 0;
+      font-family: $font;
+    }
+
+    .client-id {
+      display: inline-block;
+      font-family: $font-mono;
+      font-size: 0.75rem;
+      background: $gray-100;
+      border-radius: 3px;
+      padding: 2px 6px;
+      color: $text-muted;
+      border: 1px solid $border;
+    }
+  }
+
+  .client-meta {
+    font-size: 0.75rem;
+    color: $text-muted;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-family: $font;
+
+    .meta-label {
+      font-weight: 600;
+      color: $text-subtle;
+      margin-right: 3px;
+    }
+  }
+
+  .client-actions {
+    display: flex;
+    gap: $sp-2;
+    align-items: center;
+    flex-shrink: 0;
+  }
+}
+
+// ── Status pills ───────────────────────────────────────────────────────────────
+.status {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: $font;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &.active  { background: $success-light; color: $success; border: 1px solid $success-border; }
+  &.revoked { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+  &.expired { background: $warning-light; color: $warning; border: 1px solid $warning-border; }
+}
+
+// ── Buttons ────────────────────────────────────────────────────────────────────
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+  border-radius: $radius-sm;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background $duration $ease, box-shadow $duration $ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: $primary;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: $primary-hover;
+    box-shadow: $shadow-sm;
+  }
+}
+
+.btn-secondary {
+  background: $surface;
+  border-color: $border;
+  color: $text-muted;
+
+  &:hover:not(:disabled) {
+    background: $gray-50;
+    color: $text;
+  }
+}
+
+.btn-danger {
+  background: $surface;
+  border-color: $danger-border;
+  color: $danger;
+
+  &:hover:not(:disabled) {
+    background: $danger-light;
+  }
+}
+
+// ── Responsive ─────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .api-client-container { padding: $sp-4; }
+
+  .client-card {
+    flex-direction: column;
+    gap: $sp-3;
+
+    .client-meta { min-width: unset; }
+  }
+}

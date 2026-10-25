@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Widen users.login from varchar(50) to varchar(254) so long Active Directory UPNs
+        (e.g. first.last@sub.division.example.com) fit. Matches the email column width and the
+        @Size(max = 254) on User/AdminUserDTO/LoginVM. ALTER COLUMN TYPE preserves the existing
+        unique constraint on login.
+    -->
+    <changeSet id="20260619100100-1" author="gotechly-gateway">
+        <modifyDataType tableName="users" columnName="login" newDataType="varchar(254)"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,229 @@
+<div class="page">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <h1 class="page-title">Pending Approvals</h1>
+    @if (totalCount > 0) {
+      <span class="total-chip">{{ totalCount }} total</span>
+    }
+  </div>
+
+  <!-- ── Filter bar ─────────────────────────────────────────────── -->
+  <div class="filter-bar">
+    <select class="filter-select" [(ngModel)]="filterEntityType" (change)="applyFilters()">
+      <option value="">All Entity Types</option>
+      @for (opt of entityTypeOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+    <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+      <option value="">All Status</option>
+      <option value="PENDING">Pending</option>
+      <option value="APPROVED">Approved</option>
+      <option value="REJECTED">Rejected</option>
+    </select>
+  </div>
+
+  <!-- ── Detail overlay ─────────────────────────────────────────── -->
+  @if (selectedItem) {
+    <div class="detail-overlay" (click)="closeDetail()">
+      <div class="detail-panel" (click)="$event.stopPropagation()">
+
+        <div class="detail-header">
+          <div class="detail-header-left">
+            <h2 class="detail-title">{{ selectedItem.changeType }} {{ getEntityLabel(selectedItem.entityType) }}</h2>
+            <span class="status-badge"
+                  [class.status-badge--pending]="selectedItem.status === 'PENDING'"
+                  [class.status-badge--approved]="selectedItem.status === 'APPROVED'"
+                  [class.status-badge--rejected]="selectedItem.status === 'REJECTED'">
+              {{ selectedItem.status }}
+            </span>
+          </div>
+          <button class="btn-close" (click)="closeDetail()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="detail-body">
+          <div class="meta-section">
+            <div class="meta-row">
+              <span class="meta-label">Submitted by</span>
+              <span class="meta-value">{{ selectedItem.makerUsername }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Submitted at</span>
+              <span class="meta-value">{{ selectedItem.makerDate }}</span>
+            </div>
+            @if (selectedItem.description) {
+              <div class="meta-row">
+                <span class="meta-label">Description</span>
+                <span class="meta-value">{{ selectedItem.description }}</span>
+              </div>
+            }
+            @if (selectedItem.checkerUsername) {
+              <div class="meta-row">
+                <span class="meta-label">Reviewed by</span>
+                <span class="meta-value">{{ selectedItem.checkerUsername }} at {{ selectedItem.checkerDate }}</span>
+              </div>
+            }
+            @if (selectedItem.checkerRemarks) {
+              <div class="meta-row">
+                <span class="meta-label">Remarks</span>
+                <span class="meta-value meta-value--remarks">{{ selectedItem.checkerRemarks }}</span>
+              </div>
+            }
+          </div>
+
+          @if (parsedPayload) {
+            <p class="diff-heading">{{ selectedItem.changeType === 'CREATE' ? 'New Record' : 'Changes' }}</p>
+            <div class="diff-table-wrap">
+              <table class="diff-table">
+                <thead>
+                  <tr>
+                    <th>Field</th>
+                    @if (parsedPrevious) {
+                      <th>Old Value</th>
+                    }
+                    <th>{{ parsedPrevious ? 'New Value' : 'Value' }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (key of getPayloadKeys(); track key) {
+                    <tr [class.diff-row--changed]="isChanged(key)">
+                      <td class="cell-field-name">{{ key }}</td>
+                      @if (parsedPrevious) {
+                        <td class="cell-mono cell-mono--old">{{ formatValue(parsedPrevious[key]) }}</td>
+                      }
+                      <td class="cell-mono cell-mono--new">{{ formatValue(parsedPayload![key]) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+
+        @if (selectedItem.status === 'PENDING') {
+          <div class="detail-footer">
+            <div class="reject-section">
+              <input type="text" class="remarks-input"
+                     [placeholder]="isOwnChange(selectedItem) ? 'Cancellation reason (optional)…' : 'Rejection remarks (optional)…'"
+                     [(ngModel)]="rejectRemarks" />
+              <button class="btn-action btn-action--reject" (click)="reject()">
+                {{ isOwnChange(selectedItem) ? 'Cancel Change' : 'Reject' }}
+              </button>
+            </div>
+            @if (!isOwnChange(selectedItem)) {
+              <button class="btn-action btn-action--approve" (click)="approve()">Approve</button>
+            }
+          </div>
+        }
+
+      </div>
+    </div>
+  }
+
+  <!-- ── Loading skeleton ───────────────────────────────────────── -->
+  @if (loading) {
+    <div class="table-card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Entity Type</th>
+              <th>Change</th>
+              <th>Description</th>
+              <th>Submitted By</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="skeleton-row">
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--lg"></span></td>
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ── Empty state ────────────────────────────────────────────── -->
+  @if (!loading && items.length === 0) {
+    <div class="empty-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 11l3 3L22 4"></path>
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+      </svg>
+      <p class="empty-title">No pending changes</p>
+      <p class="empty-sub">All changes have been reviewed</p>
+    </div>
+  }
+
+  <!-- ── Table ──────────────────────────────────────────────────── -->
+  @if (!loading && items.length > 0) {
+    <div class="table-card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Entity Type</th>
+              <th>Change</th>
+              <th>Description</th>
+              <th>Submitted By</th>
+              <th>Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items; track item.id) {
+              <tr class="data-row" (click)="selectItem(item)">
+                <td class="cell-id">{{ item.id }}</td>
+                <td><span class="type-badge">{{ getEntityLabel(item.entityType) }}</span></td>
+                <td>
+                  <span class="change-badge"
+                        [class.change-badge--create]="item.changeType === 'CREATE'"
+                        [class.change-badge--update]="item.changeType === 'UPDATE'">
+                    {{ item.changeType }}
+                  </span>
+                </td>
+                <td class="cell-desc">{{ item.description || '—' }}</td>
+                <td>{{ item.makerUsername }}</td>
+                <td class="cell-timestamp">{{ item.makerDate }}</td>
+                <td>
+                  <span class="status-badge"
+                        [class.status-badge--pending]="item.status === 'PENDING'"
+                        [class.status-badge--approved]="item.status === 'APPROVED'"
+                        [class.status-badge--rejected]="item.status === 'REJECTED'">
+                    {{ item.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <app-pagination [currentPage]="currentPage" [totalItems]="totalCount" [pageSize]="pageSize"
+                    (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" />
+  }
+
+</div>

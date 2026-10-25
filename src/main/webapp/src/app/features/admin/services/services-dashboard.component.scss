@@ -1,0 +1,299 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.services-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-4;
+
+  // ── Header ──────────────────────────────────────────────────────────────────
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $sp-3;
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: $text;
+      margin: 0;
+    }
+
+    .btn-auto-refresh {
+      padding: 5px 12px;
+      border: 1px solid $border;
+      border-radius: $radius-sm;
+      font-size: 0.75rem;
+      font-weight: 500;
+      font-family: $font;
+      background: $surface;
+      color: $text-muted;
+      cursor: pointer;
+      transition: background $duration $ease, color $duration $ease, border-color $duration $ease;
+
+      &:hover { background: $gray-100; color: $text; }
+
+
+      // $primary — using the token instead of the hardcoded value.
+      &.active {
+        background: $primary-subtle;
+        color: $primary;
+        border-color: rgba($primary, 0.3);
+      }
+    }
+  }
+
+  // ── Alerts ──────────────────────────────────────────────────────────────────
+  .alert {
+    padding: $sp-2 $sp-3;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+    font-weight: 500;
+
+    &.alert-error {
+      background: $danger-light;
+      color: $danger;
+      border: 1px solid $danger-border;
+    }
+
+    &.alert-info {
+      background: $warning-light;
+      color: $warning;
+      border: 1px solid $warning-border;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      color: inherit;
+      opacity: 0.7;
+      transition: opacity $duration $ease;
+
+      &:hover { opacity: 1; }
+    }
+  }
+
+  // ── Loading / empty states ────────────────────────────────────────────────
+  .loading {
+    text-align: center;
+    padding: $sp-6 $sp-4;
+    color: $text-subtle;
+    font-size: 0.8125rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: $sp-8 $sp-4;
+    color: $text-subtle;
+    font-size: 0.8125rem;
+  }
+
+  // ── Services grid ─────────────────────────────────────────────────────────
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $sp-3;
+  }
+
+  // ── Service card ──────────────────────────────────────────────────────────
+  .service-card {
+    background: $surface;
+    border: 1px solid $border;
+    border-radius: $radius;
+    padding: $sp-3 $sp-4;
+    box-shadow: $shadow-xs;
+    transition: box-shadow $duration $ease, border-color $duration $ease, background $duration $ease;
+
+    &:hover { box-shadow: $shadow-sm; }
+
+    // Amber throughout — a drained node is deliberate maintenance, so it must
+    // never read as the red of a node that failed health checks.
+    &.draining {
+      border-color: $warning;
+      background: $warning-light;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $sp-3;
+
+      .service-name {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: $text;
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: $gray-300;
+
+        &.up      { background: $success; box-shadow: 0 0 0 2px rgba($success, 0.2); }
+        &.down    { background: $danger;  box-shadow: 0 0 0 2px rgba($danger, 0.2); }
+        &.draining{ background: $warning; box-shadow: 0 0 0 2px rgba($warning, 0.2); }
+      }
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: $sp-2;
+
+      .field {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: $sp-2;
+
+        .label {
+          font-size: 0.6875rem;
+          font-weight: 600;
+          color: $text-muted;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          flex-shrink: 0;
+        }
+
+        .value {
+          font-size: 0.8125rem;
+          color: $text;
+          text-align: right;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+
+          &.url          { font-size: 0.75rem; color: $text-muted; }
+          &.status-up    { color: $success; font-weight: 500; }
+          &.status-down  { color: $danger;  font-weight: 500; }
+          &.status-draining { color: $warning; font-weight: 600; }
+        }
+      }
+
+      .error-message {
+        margin-top: $sp-1;
+        padding: $sp-2 $sp-3;
+        background: $danger-light;
+        border: 1px solid $danger-border;
+        border-radius: $radius-sm;
+        font-size: 0.75rem;
+        color: $danger;
+        word-break: break-word;
+      }
+
+      // ── Drain panel ───────────────────────────────────────────────────────
+      .drain-panel {
+        margin-top: $sp-3;
+        padding: $sp-2 $sp-3;
+        border-radius: $radius-sm;
+        background: $warning-light;
+        border: 1px solid $warning-border;
+
+        &.quiet {
+          background: rgba($success, 0.12);
+          border-color: rgba($success, 0.4);
+        }
+
+        // Drained longer than a deploy takes — no longer a planned state, it's
+        // unaccounted-for capacity. Escalate to $danger, unlike the plain drain above.
+        &.stale {
+          background: $danger-light;
+          border-color: $danger-border;
+        }
+
+        .drain-status {
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: $text;
+        }
+
+        .drain-detail {
+          margin-top: $sp-1;
+          font-size: 0.75rem;
+          color: $text-muted;
+
+          &.warn {
+            color: $danger;
+            font-weight: 500;
+          }
+        }
+
+        .drain-requests {
+          margin: $sp-1 0 0;
+          padding-left: 1rem;
+          font-family: monospace;
+          font-size: 0.7rem;
+          color: $text-muted;
+          overflow-wrap: anywhere;
+        }
+      }
+    }
+
+    // ── Card actions ────────────────────────────────────────────────────────
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $sp-2;
+      padding: $sp-3 $sp-4;
+      border-top: 1px solid $border;
+
+      .btn {
+        padding: 6px 12px;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        border-radius: $radius-sm;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: background $duration $ease;
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+
+      .btn-warn {
+        background: $warning;
+        color: #fff;
+
+        &:hover:not(:disabled) { background: darken($warning, 10%); }
+      }
+
+      .btn-primary {
+        background: $primary;
+        color: #fff;
+
+        &:hover:not(:disabled) { background: $primary-hover; }
+      }
+
+      .btn-danger-outline {
+        background: $surface;
+        color: $danger;
+        border-color: $danger-border;
+
+        &:hover:not(:disabled) { background: $danger-light; }
+      }
+
+      .drain-unknown {
+        font-size: 0.75rem;
+        color: $text-subtle;
+      }
+    }
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .services-container { padding: $sp-3; }
+  .services-grid { grid-template-columns: 1fr; }
+}

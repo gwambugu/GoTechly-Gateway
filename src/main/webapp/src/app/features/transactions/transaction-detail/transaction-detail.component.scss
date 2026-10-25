@@ -1,0 +1,405 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.detail-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Page header ───────────────────────────────────────────────────────────────
+.detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-muted;
+  text-decoration: none;
+  transition: color $duration $ease;
+  width: fit-content;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  flex-wrap: wrap;
+}
+
+.detail-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+// Status badges (shared with list)
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+
+  &.badge-success {
+    background: $success-light;
+    color: $success;
+    border: 1px solid $success-border;
+  }
+  &.badge-danger {
+    background: $danger-light;
+    color: $danger;
+    border: 1px solid $danger-border;
+  }
+  &.badge-warning {
+    background: $warning-light;
+    color: $warning;
+    border: 1px solid $warning-border;
+  }
+}
+
+// ── Hero card ─────────────────────────────────────────────────────────────────
+.hero-card {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.hero-amount {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: $sp-5 $sp-6;
+  min-width: 180px;
+  flex-shrink: 0;
+  background: $primary-light;
+}
+
+.hero-amount-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: $primary;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-amount-currency {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $primary;
+  margin-top: $sp-1;
+  opacity: 0.7;
+}
+
+.hero-divider {
+  width: 1px;
+  background: $border;
+  flex-shrink: 0;
+}
+
+.hero-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: $sp-4 $sp-5;
+  justify-content: center;
+}
+
+.hero-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-3;
+  padding: 4px 0;
+}
+
+.hero-meta-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: $text-subtle;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+.hero-meta-value {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text;
+  word-break: break-all;
+
+  &.mono {
+    font-family: $font-mono;
+    font-size: 0.75rem;
+  }
+}
+
+// ── Section pair (side by side) ───────────────────────────────────────────────
+.section-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $sp-4;
+}
+
+// ── Accordion section ─────────────────────────────────────────────────────────
+.section {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.section-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4;
+  background: $gray-50;
+  border: none;
+  border-bottom: 1px solid $border;
+  cursor: pointer;
+  text-align: left;
+  user-select: none;
+  transition: background $duration $ease;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  h2 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+    flex: 1;
+  }
+}
+
+.section-chevron {
+  color: $text-subtle;
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+  transition: transform 200ms $ease;
+
+  &.open {
+    transform: rotate(0deg);
+  }
+}
+
+.section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+
+  &.section-icon--sender   { background: $info-light;    color: $info; }
+  &.section-icon--receiver { background: $success-light; color: $success; }
+  &.section-icon--cbs      { background: $warning-light; color: $warning; }
+  &.section-icon--psp      { background: $primary-light; color: $primary; }
+}
+
+.section-body {
+  padding: $sp-4 $sp-5;
+
+  &.section-body--flush {
+    padding: 0;
+  }
+}
+
+// ── Field grid ────────────────────────────────────────────────────────────────
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: $sp-4 $sp-5;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  &.field--wide {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-subtle;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  span {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $text;
+    word-break: break-all;
+
+    &.mono {
+      font-family: $font-mono;
+      font-size: 0.75rem;
+      color: $text;
+    }
+  }
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  &.badge-type {
+    background: $primary-light;
+    color: $primary;
+    border: 1px solid rgba($primary, 0.2);
+  }
+}
+
+// ── Additional fields KV table ────────────────────────────────────────────────
+.kv-table {
+  display: flex;
+  flex-direction: column;
+}
+
+.kv-row {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-4;
+  padding: $sp-2 0;
+  border-bottom: 1px solid $gray-100;
+  font-size: 0.8125rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.kv-key {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $text-muted;
+  min-width: 180px;
+  flex-shrink: 0;
+}
+
+.kv-ns {
+  color: $text-subtle;
+}
+
+.kv-value {
+  color: $text;
+  word-break: break-all;
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-3;
+  padding: $sp-12;
+  color: $text-muted;
+
+  p {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position:  600px 0; }
+}
+
+%sk-base {
+  display: inline-block;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.sk {
+  @extend %sk-base;
+  height: 14px;
+
+  &.sk--xl  { width: 120px; height: 44px; border-radius: $radius; }
+  &.sk--lg  { width: 200px; }
+  &.sk--md  { width: 140px; }
+}
+
+.skeleton-card {
+  padding: $sp-5;
+  min-height: 90px;
+}
+
+.skeleton-section {
+  min-height: 50px;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .hero-card {
+    flex-direction: column;
+  }
+
+  .hero-divider {
+    width: 100%;
+    height: 1px;
+  }
+
+  .hero-amount {
+    min-width: unset;
+  }
+
+  .section-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-page {
+    padding: $sp-4;
+    gap: $sp-3;
+  }
+}

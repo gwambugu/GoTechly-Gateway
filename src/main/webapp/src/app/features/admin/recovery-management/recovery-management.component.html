@@ -1,0 +1,181 @@
+<div class="recovery-page">
+  <header class="page-header">
+    <div>
+      <h1>Transaction Recovery</h1>
+      <p class="subtitle">
+        Transactions where core banking may not yet match the answer a scheme was already given.
+      </p>
+    </div>
+    <button class="btn btn-secondary" (click)="refresh()" [disabled]="loading()">Refresh</button>
+  </header>
+
+  @if (metrics(); as m) {
+    <div class="metrics-strip">
+      <!-- The one card that should ever page someone: a scheme holds an answer core banking
+           does not match, and only a person can close it. -->
+      <div class="metric-card metric-alert">
+        <span class="metric-value">{{ needsAttention() }}</span>
+        <span class="metric-label">Needs attention</span>
+      </div>
+      <div class="metric-card metric-warn">
+        <span class="metric-value">{{ m.states.PENDING ?? 0 }}</span>
+        <span class="metric-label">Pending</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-value">{{ m.states.IN_PROGRESS ?? 0 }}</span>
+        <span class="metric-label">In progress</span>
+      </div>
+      <div class="metric-card metric-success">
+        <span class="metric-value">{{ m.states.RECONCILED ?? 0 }}</span>
+        <span class="metric-label">Reconciled</span>
+      </div>
+      <div class="metric-card">
+        <span class="metric-value">{{ m.queue.queued }} / {{ m.queue.capacity }}</span>
+        <span class="metric-label">Working set</span>
+      </div>
+      <!-- Rising deferrals mean core banking has been failing long enough to fill the queue.
+           Nothing is lost when this climbs — the durable rows remain — but it is the early warning. -->
+      <div class="metric-card" [class.metric-warn]="m.queue.deferredOffers > 0">
+        <span class="metric-value">{{ m.queue.deferredOffers }}</span>
+        <span class="metric-label">Queue deferrals</span>
+      </div>
+    </div>
+    <p class="instance-note">
+      Working-set figures are for instance <code>{{ m.queue.instanceId }}</code>
+      ({{ m.queue.workers }} workers, {{ m.queue.running ? 'running' : 'stopped' }}) — row counts are cluster-wide.
+    </p>
+  }
+
+  @if (error()) {
+    <div class="alert alert-error">{{ error() }}</div>
+  }
+  @if (notice()) {
+    <div class="alert alert-success">{{ notice() }}</div>
+  }
+
+  <div class="filters">
+    <label for="stateFilter">State</label>
+    <select id="stateFilter" [ngModel]="stateFilter()"
+            (ngModelChange)="onStateFilterChange($event)">
+      @for (s of states; track s) {
+        <option [value]="s">{{ s }}</option>
+      }
+    </select>
+    <span class="result-count">{{ total() }} transaction(s)</span>
+  </div>
+
+  @if (loading()) {
+    <div class="loading">Loading…</div>
+  } @else if (rows().length === 0) {
+    <div class="empty">
+      No transactions in this state.
+      @if (stateFilter() === 'NEEDS_ATTENTION') {
+        <span> Nothing is waiting on a person — core banking agrees with what the schemes were told.</span>
+      }
+    </div>
+  } @else {
+    <table class="recovery-table">
+      <thead>
+        <tr>
+          <th>Request ID</th>
+          <th>Scheme</th>
+          <th>Declared</th>
+          <th>Core banking</th>
+          <th>State</th>
+          <th class="numeric">Attempts</th>
+          <th>Next attempt</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.requestId) {
+          <tr [ngClass]="stateRowClass(row.state)">
+            <td class="mono">{{ row.requestId }}</td>
+            <td>{{ row.paymentType }} <span class="dim">{{ row.direction }}</span></td>
+            <td><span class="badge" [class]="outcomeClass(row.declaredOutcome)">{{ row.declaredOutcome }}</span></td>
+            <td>{{ row.lastCbsState ?? '—' }}</td>
+            <td><span class="badge" [class]="stateClass(row.state)">{{ row.state }}</span></td>
+            <td class="numeric">{{ row.attempts }}</td>
+            <td>{{ row.nextAttemptAt | date: 'short' }}</td>
+            <td>
+              <button class="btn btn-link" (click)="toggleExpanded(row.requestId)">
+                {{ expandedRequestId() === row.requestId ? 'Close' : 'Details' }}
+              </button>
+            </td>
+          </tr>
+
+          @if (expandedRequestId() === row.requestId) {
+            <tr class="detail-row">
+              <td colspan="8">
+                <div class="detail-grid">
+                  <div><span class="detail-label">Triggered by</span><span class="mono">{{ row.triggerHaltCode ?? '—' }}</span></div>
+                  <div><span class="detail-label">Last phase</span><span class="mono">{{ row.lastPhase ?? '—' }}</span></div>
+                  <div><span class="detail-label">Last action</span><span>{{ row.lastAction ?? '—' }}</span></div>
+                  <div><span class="detail-label">Deadline</span><span>{{ row.deadlineAt | date: 'short' }}</span></div>
+                  <div><span class="detail-label">Created</span><span>{{ row.createdAt | date: 'short' }}</span></div>
+                  <div><span class="detail-label">Owner</span><span class="mono">{{ row.ownerInstance ?? 'unclaimed' }}</span></div>
+                  <div class="detail-wide"><span class="detail-label">Detail</span><span>{{ row.lastDetail ?? '—' }}</span></div>
+                </div>
+
+                @if (needsDeclaredOutcome(row)) {
+                  <!-- The only route out for an UNKNOWN row. Requeuing alone escalates it again,
+                       because requeuing supplies no new information — what is missing is what the
+                       scheme was told, and that has to come from a person who has read the callback
+                       that went out. -->
+                  <div class="action-panel action-panel-primary">
+                    <h3>Supply the declared outcome</h3>
+                    <p class="action-help">
+                      The corridor did not record what this transaction's callback told the scheme, so no
+                      repair can be chosen — reversing and reposting move money in opposite directions.
+                      Check the message that was actually sent, then set it here.
+                    </p>
+                    <div class="action-row">
+                      <select [ngModel]="outcomeChoice()" (ngModelChange)="outcomeChoice.set($event)">
+                        @for (o of selectableOutcomes; track o) {
+                          <option [value]="o">{{ o }}</option>
+                        }
+                      </select>
+                      <input type="text" placeholder="Reason (recorded on the row)"
+                             [ngModel]="outcomeReason()" (ngModelChange)="outcomeReason.set($event)" />
+                      <button class="btn btn-primary"
+                              [disabled]="actingOn() === row.requestId"
+                              (click)="supplyOutcome(row)">Set and resume</button>
+                    </div>
+                  </div>
+                }
+
+                <div class="action-panel">
+                  <div class="action-row">
+                    <button class="btn btn-secondary"
+                            [disabled]="actingOn() === row.requestId"
+                            (click)="requeue(row)">Requeue</button>
+                    <input type="text" placeholder="Cancellation reason"
+                           [ngModel]="cancelReason()" (ngModelChange)="cancelReason.set($event)" />
+                    <button class="btn btn-danger"
+                            [disabled]="actingOn() === row.requestId || row.state !== 'PENDING'"
+                            (click)="cancel(row)">Cancel</button>
+                  </div>
+                  <p class="action-help">
+                    Requeue restarts reconciliation with a fresh budget — use it once whatever was failing
+                    is fixed. Cancel stops trying, for an inconsistency being settled outside the system.
+                    @if (needsDeclaredOutcome(row)) {
+                      <strong> Requeue will not help this row until an outcome is supplied above.</strong>
+                    }
+                  </p>
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <app-pagination
+      [currentPage]="currentPage()"
+      [totalItems]="total()"
+      [pageSize]="pageSize()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  }
+</div>

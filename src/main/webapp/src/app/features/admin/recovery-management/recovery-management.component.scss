@@ -1,0 +1,306 @@
+.recovery-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 14px;
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0;
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #6b7280;
+    }
+  }
+
+  .metrics-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-bottom: 8px;
+
+    .metric-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      .metric-value {
+        font-size: 22px;
+        font-weight: 600;
+        color: #1a1a1a;
+      }
+
+      .metric-label {
+        font-size: 12px;
+        color: #6b7280;
+      }
+
+      // A scheme holds an answer core banking does not match. This is the number to page on,
+      // so it stops looking like the others the moment it is non-zero.
+      &.metric-alert {
+        border-color: #fecaca;
+        background: #fef2f2;
+
+        .metric-value { color: #dc2626; }
+      }
+
+      &.metric-warn {
+        border-color: #fde68a;
+        background: #fffbeb;
+
+        .metric-value { color: #b45309; }
+      }
+
+      &.metric-success {
+        border-color: #6ee7b7;
+        background: #f0fdf4;
+
+        .metric-value { color: #15803d; }
+      }
+    }
+  }
+
+  .instance-note {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0 0 14px;
+
+    code { font-size: 11px; }
+  }
+
+  .alert {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    font-size: 13px;
+
+    &.alert-error {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+    }
+
+    &.alert-success {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+  }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 14px;
+
+    label {
+      font-size: 13px;
+      color: #374151;
+    }
+
+    select {
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .result-count {
+      margin-left: auto;
+      font-size: 13px;
+      color: #6b7280;
+    }
+  }
+
+  .loading,
+  .empty {
+    padding: 32px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+  }
+
+  .recovery-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 13px;
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+      font-weight: 600;
+      color: #374151;
+      font-size: 12px;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+
+    .numeric { text-align: right; }
+
+    tr.row-alert td {
+      background: #fef2f2;
+    }
+
+    tr.row-warn td {
+      background: #fffbeb;
+    }
+
+    tr.row-success td {
+      background: #f0fdf4;
+    }
+
+    tr.detail-row td {
+      background: #f9fafb;
+      padding: 14px 16px;
+    }
+  }
+
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+  }
+
+  .dim {
+    color: #9ca3af;
+    font-size: 11px;
+    margin-left: 4px;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+
+    &.badge-danger { background: #fef2f2; color: #dc2626; }
+    &.badge-success { background: #f0fdf4; color: #15803d; }
+    &.badge-warn { background: #fffbeb; color: #b45309; }
+    &.badge-info { background: #eff6ff; color: #2563eb; }
+    &.badge-muted { background: #f3f4f6; color: #6b7280; }
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 8px 20px;
+    margin-bottom: 12px;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .detail-wide { grid-column: 1 / -1; }
+
+    .detail-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #9ca3af;
+    }
+  }
+
+  .action-panel {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 12px;
+    margin-top: 12px;
+
+    h3 {
+      margin: 0 0 6px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    // The supply-outcome panel is the only route out for an UNKNOWN row, so it leads.
+    &.action-panel-primary {
+      border-top: none;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 0;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+
+      input[type='text'] {
+        flex: 1;
+        min-width: 200px;
+        padding: 6px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+
+      select {
+        padding: 6px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 13px;
+      }
+    }
+
+    .action-help {
+      margin: 8px 0 0;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+  }
+
+  .btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid transparent;
+
+    &:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    &.btn-primary { background: #2563eb; color: #fff; }
+    &.btn-secondary { background: #fff; color: #374151; border-color: #d1d5db; }
+    &.btn-danger { background: #fff; color: #dc2626; border-color: #fecaca; }
+
+    &.btn-link {
+      background: none;
+      border: none;
+      color: #2563eb;
+      padding: 0;
+    }
+  }
+}

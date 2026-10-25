@@ -1,0 +1,384 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.txn-page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-4;
+  flex-wrap: wrap;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.count-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $text-muted;
+  background: $gray-100;
+  border: 1px solid $border;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+// ── Source tabs ───────────────────────────────────────────────────────────────
+.source-tabs {
+  display: flex;
+  gap: 2px;
+  background: $gray-100;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 3px;
+}
+
+.source-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background $duration $ease, color $duration $ease, box-shadow $duration $ease;
+  white-space: nowrap;
+
+  svg { flex-shrink: 0; }
+
+  &:hover {
+    color: $text;
+  }
+
+  &.active {
+    background: $surface;
+    color: $text;
+    box-shadow: $shadow-xs;
+  }
+}
+
+.tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $gray-300;
+
+  &.tab-dot--active { background: $success; }
+}
+
+// ── Filter bar ────────────────────────────────────────────────────────────────
+// Unified toolbar: all controls sit in a single bordered row, full width.
+.filter-bar {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 8px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 6px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: $shadow-xs;
+}
+
+.search-wrap {
+  position: relative;
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.search-input {
+  width: 100%;
+  padding: 7px 14px;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  color: $text;
+  background: $gray-50;
+  outline: none;
+  box-sizing: border-box;
+  transition: background $duration $ease, box-shadow $duration $ease, border-color $duration $ease;
+
+  &::placeholder { color: $text-subtle; }
+  &:focus {
+    background: $surface;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.12);
+  }
+}
+
+.filter-select {
+  padding: 7px 12px;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  color: $text;
+  background: $gray-50;
+  cursor: pointer;
+  outline: none;
+  transition: background $duration $ease, color $duration $ease, border-color $duration $ease;
+
+  &:hover { background: $gray-100; border-color: $primary; }
+  &:focus { background: $surface; border-color: $primary; box-shadow: 0 0 0 3px rgba($primary, 0.12); }
+}
+
+.btn-search {
+  padding: 7px 16px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease;
+  white-space: nowrap;
+
+  &:hover { background: $primary-hover; }
+}
+
+.btn-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
+  padding: 7px 10px;
+  background: transparent;
+  color: $text-subtle;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease, color $duration $ease;
+  white-space: nowrap;
+
+  &:hover { background: $gray-100; color: $text-muted; }
+}
+
+// ── Table card ────────────────────────────────────────────────────────────────
+.table-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    color: $text;
+    vertical-align: middle;
+    border-top: 1px solid $gray-100;
+  }
+
+  .data-row {
+    cursor: pointer;
+    transition: background $duration $ease;
+
+    &:hover {
+      background: $gray-50;
+    }
+  }
+
+  .skeleton-row td {
+    border-top: 1px solid $gray-100;
+    padding: 10px 12px;
+  }
+}
+
+// ── Cell variants ─────────────────────────────────────────────────────────────
+.cell-mono {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $text;
+}
+
+.cell-code {
+  color: $text-muted;
+}
+
+.cell-amount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.cell-currency {
+  font-size: 0.6875rem;
+  font-weight: 400;
+  color: $text-muted;
+  margin-left: 3px;
+}
+
+.cell-secondary {
+  color: $text-muted;
+  font-size: 0.8125rem;
+}
+
+.cell-time {
+  font-size: 0.75rem;
+  color: $text-muted;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell-empty {
+  color: $text-subtle;
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &.badge-success {
+    background: $success-light;
+    color: $success;
+    border: 1px solid $success-border;
+  }
+
+  &.badge-danger {
+    background: $danger-light;
+    color: $danger;
+    border: 1px solid $danger-border;
+  }
+
+  &.badge-warning {
+    background: $warning-light;
+    color: $warning;
+    border: 1px solid $warning-border;
+  }
+
+  &.badge-type {
+    background: $primary-light;
+    color: $primary;
+    border: 1px solid rgba($primary, 0.2);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+}
+
+// ── Skeleton shimmer ──────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position:  600px 0; }
+}
+
+.sk {
+  display: inline-block;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite;
+
+  &.sk--xs  { width: 48px; }
+  &.sk--sm  { width: 80px; }
+  &.sk--md  { width: 120px; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $sp-12 $sp-8;
+  gap: $sp-2;
+  color: $text-subtle;
+
+  svg { margin-bottom: $sp-2; }
+
+  .empty-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin: 0;
+  }
+
+  .empty-sub {
+    font-size: 0.8125rem;
+    color: $text-subtle;
+    margin: 0 0 $sp-3;
+  }
+}
+
+// ── Table footer / pagination ─────────────────────────────────────────────────
+.table-footer {
+  padding: $sp-3 $sp-4;
+  border-top: 1px solid $border;
+  background: $gray-50;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .txn-page {
+    padding: $sp-4;
+    gap: $sp-3;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

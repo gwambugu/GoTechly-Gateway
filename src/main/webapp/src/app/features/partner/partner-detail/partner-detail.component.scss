@@ -1,0 +1,629 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  &.alert-error   { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+  &.alert-success { background: $success-light; color: $success; border: 1px solid $success-border; }
+}
+
+.alert-body {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.alert-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 2px;
+  border-radius: 4px;
+  transition: opacity $duration $ease;
+  flex-shrink: 0;
+
+  &:hover { opacity: 1; }
+}
+
+// ── Page skeleton ─────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position:  600px 0; }
+}
+
+.sk {
+  display: inline-block;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite;
+
+  &.sk--title    { display: block; width: 260px; height: 26px; margin-bottom: $sp-2; }
+  &.sk--subtitle { display: block; width: 140px; height: 14px; }
+}
+
+// ── Detail header ─────────────────────────────────────────────────────────────
+.detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-muted;
+  text-decoration: none;
+  transition: color $duration $ease;
+  width: fit-content;
+
+  &:hover { color: $primary; }
+}
+
+.detail-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  flex-wrap: wrap;
+}
+
+.detail-title-left {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  flex-wrap: wrap;
+}
+
+.detail-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.detail-title-actions {
+  display: flex;
+  gap: $sp-2;
+  align-items: center;
+}
+
+// ── Status pills ──────────────────────────────────────────────────────────────
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+
+  &.status-active    { background: $success-light; color: $success; border: 1px solid $success-border; }
+  &.status-pending   { background: $warning-light; color: $warning; border: 1px solid $warning-border; }
+  &.status-suspended { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+  &.status-rejected  { background: $gray-100;      color: $text-muted; border: 1px solid $border; }
+}
+
+// ── Type badge ────────────────────────────────────────────────────────────────
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: $info-light;
+  color: $info;
+  border: 1px solid $info-border;
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 7px 14px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background $duration $ease, box-shadow $duration $ease;
+
+  &:hover { background: $primary-hover; box-shadow: $shadow-sm; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+.btn-ghost {
+  padding: 7px 14px;
+  background: transparent;
+  color: $text-muted;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+}
+
+// ── Tab nav ───────────────────────────────────────────────────────────────────
+.tab-nav {
+  display: flex;
+  border-bottom: 2px solid $border;
+  gap: 0;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  padding: $sp-2 $sp-4;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  color: $text-muted;
+  cursor: pointer;
+  transition: color $duration $ease, border-color $duration $ease;
+  white-space: nowrap;
+
+  &:hover { color: $text; }
+
+  &.active {
+    color: $primary;
+    border-bottom-color: $primary;
+  }
+}
+
+// ── Details grid ──────────────────────────────────────────────────────────────
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $sp-4;
+}
+
+// ── Info card ─────────────────────────────────────────────────────────────────
+.info-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4;
+  background: $gray-50;
+  border-bottom: 1px solid $border;
+
+  h3 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+}
+
+.info-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  background: $primary-light;
+  color: $primary;
+
+  &.info-card-icon--contact    { background: $success-light; color: $success; }
+  &.info-card-icon--compliance { background: $warning-light; color: $warning; }
+  &.info-card-icon--workflow   { background: $info-light;    color: $info; }
+}
+
+// ── Info rows ─────────────────────────────────────────────────────────────────
+.info-rows {
+  display: flex;
+  flex-direction: column;
+  padding: $sp-1 0;
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: $sp-4;
+  padding: $sp-2 $sp-4;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid $gray-100;
+
+  &:last-child { border-bottom: none; }
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $text-muted;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.info-value {
+  color: $text;
+  text-align: right;
+  word-break: break-all;
+
+  &.mono {
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+}
+
+// ── KYC badge ─────────────────────────────────────────────────────────────────
+.kyc-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: $gray-100;
+  color: $text-muted;
+  border: 1px solid $border;
+
+  &.kyc-verified { background: $success-light; color: $success; border-color: $success-border; }
+  &.kyc-expired  { background: $danger-light;  color: $danger;  border-color: $danger-border; }
+}
+
+// ── Certificate badge ─────────────────────────────────────────────────────────
+.cert-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: $success-light;
+  color: $success;
+  border: 1px solid $success-border;
+}
+
+// ── Tab section (content wrapper) ─────────────────────────────────────────────
+.tab-section {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+// ── Add button ────────────────────────────────────────────────────────────────
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 7px 14px;
+  background: $surface;
+  color: $primary;
+  border: 1px solid rgba($primary, 0.3);
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background $duration $ease, border-color $duration $ease;
+
+  &:hover { background: $primary-light; border-color: rgba($primary, 0.5); }
+}
+
+// ── Inline form ───────────────────────────────────────────────────────────────
+.inline-form {
+  background: $gray-50;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $sp-4;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+.inline-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+}
+
+.icon-btn-sm {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: none;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+}
+
+// ── Form grid ─────────────────────────────────────────────────────────────────
+.form-grid {
+  display: grid;
+  gap: $sp-3;
+
+  &.form-grid--3 { grid-template-columns: repeat(3, 1fr); }
+  &.form-grid--2 { grid-template-columns: repeat(2, 1fr); }
+}
+
+// ── Form field ────────────────────────────────────────────────────────────────
+.fg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &.fg--wide { grid-column: 1 / -1; }
+
+  label:not(.checkbox-label) {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input:not([type="checkbox"]), select {
+    padding: 7px 10px;
+    border: 1px solid $gray-300;
+    border-radius: $radius-sm;
+    font-size: 0.8125rem;
+    font-family: $font;
+    color: $text;
+    background: $surface;
+    outline: none;
+    transition: border-color $duration $ease, box-shadow $duration $ease;
+    width: 100%;
+    box-sizing: border-box;
+
+    &::placeholder { color: $text-subtle; }
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.10);
+    }
+  }
+}
+
+.fg--checkbox {
+  justify-content: flex-end;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+}
+
+.field-error {
+  font-size: 0.6875rem;
+  color: $danger;
+}
+
+// ── Form sub-section label ────────────────────────────────────────────────────
+.form-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: $sp-1;
+  border-bottom: 1px solid $gray-100;
+  margin-top: $sp-1;
+}
+
+// ── Inline form actions ───────────────────────────────────────────────────────
+.inline-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: $sp-2;
+}
+
+// ── Table card ────────────────────────────────────────────────────────────────
+.table-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+
+    &.cell-right { text-align: right; }
+  }
+
+  td {
+    padding: 9px 12px;
+    font-size: 0.8125rem;
+    color: $text;
+    border-top: 1px solid $gray-100;
+    vertical-align: middle;
+  }
+
+  tr:hover td { background: $gray-50; }
+}
+
+// ── Cell variants ─────────────────────────────────────────────────────────────
+.cell-mono {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  color: $text-muted;
+}
+
+.cell-secondary { color: $text-muted; }
+
+.cell-muted {
+  color: $text-subtle;
+  font-size: 0.75rem;
+}
+
+.cell-num {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.cell-count { color: $text-muted; }
+
+// ── Primary badge ─────────────────────────────────────────────────────────────
+.primary-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: $primary-light;
+  color: $primary;
+  border: 1px solid rgba($primary, 0.2);
+}
+
+// ── Row actions ───────────────────────────────────────────────────────────────
+.row-actions {
+  display: flex;
+  gap: $sp-1;
+  align-items: center;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: $radius-sm;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: none;
+  transition: background $duration $ease, color $duration $ease, border-color $duration $ease;
+
+  &.icon-btn--edit {
+    color: $primary;
+    &:hover { background: $primary-light; border-color: rgba($primary, 0.2); }
+  }
+
+  &.icon-btn--delete {
+    color: $danger;
+    &:hover { background: $danger-light; border-color: $danger-border; }
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $sp-8;
+
+  .empty-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .page { padding: $sp-4; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .form-grid.form-grid--3 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  .form-grid.form-grid--3,
+  .form-grid.form-grid--2 { grid-template-columns: 1fr; }
+}

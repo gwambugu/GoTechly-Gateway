@@ -1,0 +1,216 @@
+<div class="page">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <h1 class="page-title">Configuration Management</h1>
+  </div>
+
+  <!-- ── Tabs ───────────────────────────────────────────────────── -->
+  <div class="tabs">
+    @for (tab of tabs; track tab.entityType) {
+      <button class="tab-btn" [class.tab-btn--active]="activeTab === tab.entityType"
+              (click)="switchTab(tab.entityType)">
+        {{ tab.label }}
+      </button>
+    }
+  </div>
+
+  <!-- ── Form overlay ───────────────────────────────────────────── -->
+  @if (showForm) {
+    <div class="form-overlay" (click)="closeForm()">
+      <div class="form-panel" (click)="$event.stopPropagation()">
+
+        <div class="form-header">
+          <h2 class="form-title">{{ formMode === 'create' ? 'Create' : 'Edit' }} {{ activeTabConfig.label }}</h2>
+          <button class="btn-close" (click)="closeForm()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="form-body">
+          @if (duplicateError) {
+            <div class="alert alert-error">{{ duplicateError }}</div>
+          }
+
+          @for (field of getFormFields(); track field.key) {
+            <div class="form-group"
+                 [class.form-group--error]="(formSubmitted && field.required && isBlank(field.key)) || jsonErrors[field.key]">
+              <label class="form-label">
+                {{ field.label }}
+                @if (field.required) { <span class="required-star">*</span> }
+              </label>
+
+              @if (field.type === 'textarea') {
+                <textarea class="form-control" [(ngModel)]="formData[field.key]" rows="4"
+                          [class.form-control--error]="formSubmitted && field.required && isBlank(field.key)"></textarea>
+              } @else if (field.type === 'json') {
+                <textarea class="form-control form-control--mono" [(ngModel)]="formData[field.key]" rows="6"
+                          placeholder='e.g. { "header.X-Channel-Token": "abc123" }'
+                          [class.form-control--error]="!!jsonErrors[field.key]"></textarea>
+              } @else if (field.type === 'number') {
+                <input type="number" class="form-control" [(ngModel)]="formData[field.key]"
+                       [class.form-control--error]="formSubmitted && field.required && isBlank(field.key)">
+              } @else if (field.type === 'boolean') {
+                <input type="checkbox" class="form-checkbox" [(ngModel)]="formData[field.key]">
+              } @else {
+                <input type="text" class="form-control" [(ngModel)]="formData[field.key]"
+                       [attr.readonly]="formMode === 'edit' && field.key === 'id' ? true : null"
+                       [class.form-control--error]="formSubmitted && field.required && isBlank(field.key)">
+              }
+
+              @if (formEntityType === 'APP_CONFIGS' && field.key === 'configValue' && formData.isSensitive) {
+                <span class="field-hint">
+                  Sensitive — stored encrypted and shown masked.
+                  @if (formMode === 'edit') { Keep the masked value to retain the current secret, or type a new value to replace it. }
+                </span>
+              }
+              @if (formSubmitted && field.required && isBlank(field.key)) {
+                <span class="field-error">{{ field.label }} is required</span>
+              }
+              @if (jsonErrors[field.key]) {
+                <span class="field-error">{{ jsonErrors[field.key] }}</span>
+              }
+            </div>
+          }
+
+          <div class="form-group" [class.form-group--error]="formSubmitted && !descInput.value.trim()">
+            <label class="form-label">Change Description <span class="required-star">*</span></label>
+            <input type="text" class="form-control" #descInput placeholder="Describe the change…"
+                   [class.form-control--error]="formSubmitted && !descInput.value.trim()">
+            @if (formSubmitted && !descInput.value.trim()) {
+              <span class="field-error">Change description is required</span>
+            }
+          </div>
+        </div>
+
+        <div class="form-footer">
+          <button class="btn-ghost" (click)="closeForm()" [disabled]="submitting">Cancel</button>
+          <button class="btn-primary" (click)="submitForm(descInput.value)" [disabled]="submitting">
+            {{ submitting ? 'Submitting…' : 'Submit for Approval' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ── Search & actions bar ───────────────────────────────────── -->
+  <div class="action-bar">
+    <div class="search-group">
+      @for (sf of activeTabConfig.searchFields; track sf.filterKey) {
+        <input type="text" class="search-input" [placeholder]="sf.placeholder"
+               [(ngModel)]="searchQueries[sf.filterKey]" (keyup.enter)="applySearch()">
+      }
+      <button class="btn-search" (click)="applySearch()">Search</button>
+      @if (hasActiveSearch()) {
+        <button class="btn-ghost" (click)="clearSearch()">Clear</button>
+      }
+    </div>
+    @if (!activeTabConfig.readOnly) {
+      <button class="btn-create" (click)="openCreateForm()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Record
+      </button>
+    }
+  </div>
+
+  <!-- ── Loading skeleton ───────────────────────────────────────── -->
+  @if (loading) {
+    <div class="table-card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              @for (col of activeTabConfig.columns; track col.key) {
+                <th>{{ col.label }}</th>
+              }
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr class="skeleton-row">
+                <td><span class="sk sk--xs"></span></td>
+                @for (col of activeTabConfig.columns; track col.key) {
+                  <td><span class="sk sk--md"></span></td>
+                }
+                <td><span class="sk sk--sm"></span></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- ── Empty state ────────────────────────────────────────────── -->
+  @if (!loading && items.length === 0) {
+    <div class="empty-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+      <p class="empty-title">No records found</p>
+      <p class="empty-sub">Try adjusting your search or add a new record</p>
+    </div>
+  }
+
+  <!-- ── Data table ─────────────────────────────────────────────── -->
+  @if (!loading && items.length > 0) {
+    <div class="table-card">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              @for (col of activeTabConfig.columns; track col.key) {
+                <th>{{ col.label }}</th>
+              }
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of items; track item.id) {
+              <tr class="data-row">
+                <td><span class="cell-mono">{{ item.id }}</span></td>
+                @for (col of activeTabConfig.columns; track col.key) {
+                  <td [title]="getTooltip(item, col.key)">
+                    @if (col.mono) {
+                      <span class="cell-mono">{{ getFieldValue(item, col.key) }}</span>
+                    } @else {
+                      {{ getFieldValue(item, col.key) }}
+                    }
+                  </td>
+                }
+                <td>
+                  @if (activeTabConfig.readOnly) {
+                    <span class="view-only-label">View only</span>
+                  } @else {
+                    <button class="btn-edit" (click)="openEditForm(item)">Edit</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <app-pagination [currentPage]="currentPage" [totalItems]="totalCount" [pageSize]="pageSize"
+                    (pageChange)="onPageChange($event)" (pageSizeChange)="onPageSizeChange($event)" />
+  }
+
+</div>

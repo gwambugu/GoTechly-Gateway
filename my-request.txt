@@ -1,0 +1,9 @@
+
+Please add a user management component in feature/admin folder.  In user management component I want to have these features:
+1. A function where I can verify and approve new users.
+2. See all all suers and can search by email or username, 
+3. Change or Asign user roles.
+4. Disable or activate users.
+5. See users that are online.
+Please plan and show me the plan for approval.
+ 

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Discriminates how a user authenticates:
+          AD    - validated against Active Directory at login (no usable local password)
+          LOCAL - break-glass account that authenticates locally via BCrypt
+        New column defaults to AD; existing rows (incl. the seeded admin) are set to LOCAL
+        so the AD bind never touches them.
+    -->
+    <changeSet id="20260619100000-1" author="gotechly-gateway">
+        <addColumn tableName="users">
+            <column name="auth_source" type="varchar(10)" defaultValue="AD">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <update tableName="users">
+            <column name="auth_source" value="LOCAL"/>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

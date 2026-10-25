@@ -1,0 +1,68 @@
+@if (loading) {
+  <div class="loading">Loading audit trail...</div>
+} @else if (errorMessage) {
+  <div class="empty" style="color: #c44;">{{ errorMessage }}</div>
+} @else if (auditLogs.length === 0) {
+  <div class="empty">No audit records found for this transaction.</div>
+} @else {
+  <div class="timeline">
+    @for (log of auditLogs; track log.id; let i = $index) {
+      <div class="timeline-item" [class]="getEventClass(log.eventType)">
+        <div class="timeline-marker">
+          <span class="marker-icon">{{ getEventIcon(log.eventType) }}</span>
+          @if (i < auditLogs.length - 1) {
+            <div class="marker-line"></div>
+          }
+        </div>
+        <div class="timeline-content" (click)="toggleStage(i)">
+          <div class="stage-header">
+            <span class="stage-name">{{ log.phaseName || log.actorId || 'Unknown Stage' }}</span>
+            <span class="event-type">{{ log.eventType }}</span>
+            @if (log.role) {
+              <span class="duration">{{ log.role }}</span>
+            }
+          </div>
+
+          @if (expandedStage === i) {
+            <div class="stage-details">
+              @if (parseChangedFields(log.changedFields).length > 0) {
+                <div class="changed-fields">
+                  <div class="detail-label">Changed Fields:</div>
+                  @for (field of parseChangedFields(log.changedFields); track field) {
+                    <span class="field-tag">{{ field }}</span>
+                  }
+                </div>
+              }
+              @if (parseJson(log.oldValue); as oldVal) {
+                <div class="diff-section">
+                  <div class="detail-label">Before:</div>
+                  <div class="diff-values">
+                    @for (entry of getObjectEntries(oldVal); track entry[0]) {
+                      <div class="diff-row old"><span class="diff-key">{{ entry[0] }}</span><span class="diff-val">{{ entry[1] }}</span></div>
+                    }
+                  </div>
+                </div>
+              }
+              @if (parseJson(log.newValue); as newVal) {
+                <div class="diff-section">
+                  <div class="detail-label">After:</div>
+                  <div class="diff-values">
+                    @for (entry of getObjectEntries(newVal); track entry[0]) {
+                      <div class="diff-row new"><span class="diff-key">{{ entry[0] }}</span><span class="diff-val">{{ entry[1] }}</span></div>
+                    }
+                  </div>
+                </div>
+              }
+              @if (log.environment) {
+                <div class="error-info"><span class="detail-label">Error:</span> {{ log.environment }}</div>
+              }
+              @if (log.endpoint) {
+                <div class="summary-info">{{ log.endpoint }}</div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}

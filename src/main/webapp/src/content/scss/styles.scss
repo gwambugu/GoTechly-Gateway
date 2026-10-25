@@ -1,0 +1,762 @@
+@import 'content/scss/variables';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reset
+// ─────────────────────────────────────────────────────────────────────────────
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Base
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── CSS custom properties ──────────────────────────────────────────────────────
+// Must live in the global stylesheet — Angular's ViewEncapsulation transforms
+// :root in component styles to [_ngcontent-...]:root which never matches.
+:root {
+  --sidenav-width: 240px;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: $font;
+  font-size: 0.875rem;   // 14px — up from implicit 13px
+  line-height: 1.5;
+  color: $text;
+  background: $bg;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden; // prevent body-level horizontal scroll that would let content slide under the fixed sidenav
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  transition: color $duration $ease;
+
+  &:hover { color: $primary-hover; }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Typography
+// ─────────────────────────────────────────────────────────────────────────────
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font;
+  line-height: 1.25;
+  color: $text;
+}
+
+h1 { font-size: 1.5rem;   font-weight: 700; letter-spacing: -0.025em; }
+h2 { font-size: 1.25rem;  font-weight: 600; letter-spacing: -0.015em; }
+h3 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.01em; }
+h4 { font-size: 1rem;     font-weight: 600; }
+h5 { font-size: 0.875rem; font-weight: 500; }
+h6 {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+}
+
+p { color: $gray-600; line-height: 1.6; }
+
+code, pre {
+  font-family: $font-mono;
+  font-size: 0.8125rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Layout
+// ─────────────────────────────────────────────────────────────────────────────
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 $sp-6;
+}
+
+// Standard page shell — use this in every routed component
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: $sp-6;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $sp-4;
+    margin-bottom: $sp-5;
+
+    &-text {
+      h1, h2 { margin: 0; }
+      p {
+        font-size: 0.875rem;
+        color: $text-muted;
+        margin: 3px 0 0;
+      }
+    }
+  }
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    margin-bottom: $sp-4;
+    flex-wrap: wrap;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Buttons
+// ─────────────────────────────────────────────────────────────────────────────
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  padding: 7px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  border-radius: $radius-sm;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background $duration $ease, border-color $duration $ease,
+              box-shadow $duration $ease, transform $duration $ease;
+
+  &:active:not(:disabled) { transform: translateY(1px); }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  // ── Sizes ─────────────────────────────────────────────
+  &.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    border-radius: 5px;
+  }
+
+  &.btn-lg {
+    padding: 10px 20px;
+    font-size: 0.9375rem;
+  }
+
+  &.btn-icon {
+    padding: 7px;
+    aspect-ratio: 1;
+  }
+
+  // ── Variants ──────────────────────────────────────────
+  &.btn-primary {
+    background: $primary;
+    color: #fff;
+    border-color: $primary;
+
+    &:hover:not(:disabled) {
+      background: $primary-hover;
+      border-color: $primary-hover;
+      box-shadow: $shadow-sm;
+    }
+  }
+
+  &.btn-secondary {
+    background: $gray-100;
+    color: $gray-700;
+    border-color: $gray-200;
+
+    &:hover:not(:disabled) {
+      background: $gray-200;
+      border-color: $gray-300;
+    }
+  }
+
+  &.btn-ghost {
+    background: transparent;
+    color: $gray-600;
+    border-color: transparent;
+
+    &:hover:not(:disabled) {
+      background: $gray-100;
+      color: $gray-800;
+    }
+  }
+
+  &.btn-outline {
+    background: transparent;
+    color: $primary;
+    border-color: $primary;
+
+    &:hover:not(:disabled) {
+      background: $primary-light;
+    }
+  }
+
+  &.btn-link {
+    background: none;
+    color: $primary;
+    border-color: transparent;
+    padding: 0;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  &.btn-danger {
+    background: $danger-light;
+    color: $danger;
+    border-color: $danger-border;
+
+    &:hover:not(:disabled) { background: #fecaca; }
+  }
+
+  &.btn-success {
+    background: $success-light;
+    color: $success;
+    border-color: $success-border;
+
+    &:hover:not(:disabled) { background: #a7f3d0; }
+  }
+
+  &.btn-warning {
+    background: $warning-light;
+    color: $warning;
+    border-color: $warning-border;
+
+    &:hover:not(:disabled) { background: #fde68a; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Form elements
+// ─────────────────────────────────────────────────────────────────────────────
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: $sp-4;
+
+  label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $gray-700;
+  }
+
+  input, select, textarea {
+    @include input-field;
+  }
+
+  .error-message, .field-error {
+    font-size: 0.75rem;
+    color: $danger;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .field-hint {
+    font-size: 0.75rem;
+    color: $text-muted;
+  }
+}
+
+// Bare input/select/textarea used outside .form-group
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  @include input-field;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Card
+// ─────────────────────────────────────────────────────────────────────────────
+
+.card {
+  @include card;
+  padding: $sp-5;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Badges
+// ─────────────────────────────────────────────────────────────────────────────
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 999px;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.badge-success {
+    background: $success-light;
+    color: $success;
+    &::before { background: $success; }
+  }
+
+  &.badge-warning {
+    background: $warning-light;
+    color: $warning;
+    &::before { background: $warning; }
+  }
+
+  &.badge-danger {
+    background: $danger-light;
+    color: $danger;
+    &::before { background: $danger; }
+  }
+
+  &.badge-neutral {
+    background: $gray-100;
+    color: $gray-600;
+    &::before { background: $gray-400; }
+  }
+
+  &.badge-info {
+    background: $info-light;
+    color: $info;
+    &::before { background: $info; }
+  }
+
+  &.badge-primary {
+    background: $primary-subtle;
+    color: $primary;
+    &::before { background: $primary; }
+  }
+
+  // No dot variant (for type labels, counts)
+  &.badge-flat {
+    &::before { display: none; }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data table
+// ─────────────────────────────────────────────────────────────────────────────
+
+.table-wrapper {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+
+    th {
+      padding: 10px 16px;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: $text-muted;
+      text-align: left;
+      white-space: nowrap;
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $gray-100;
+      transition: background $duration $ease;
+
+      &:last-child { border-bottom: none; }
+      &:hover { background: $gray-50; }
+      &.clickable-row { cursor: pointer; }
+    }
+
+    td {
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      color: $gray-700;
+      vertical-align: middle;
+    }
+  }
+
+  .cell-mono {
+    font-family: $font-mono;
+    font-size: 0.8125rem;
+    color: $gray-600;
+    display: inline-block;
+  }
+
+  .cell-actions {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tabs
+// ─────────────────────────────────────────────────────────────────────────────
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border-bottom: 1px solid $border;
+  margin-bottom: $sp-4;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    gap: $sp-2;
+    padding: 9px 14px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: $text-muted;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color $duration $ease, border-color $duration $ease;
+
+    &:hover { color: $gray-800; }
+
+    &.active {
+      color: $primary;
+      border-bottom-color: $primary;
+      font-weight: 600;
+    }
+  }
+
+  .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    border-radius: 999px;
+    background: $gray-200;
+    color: $gray-600;
+
+    &.tab-count--alert {
+      background: $danger;
+      color: #fff;
+    }
+
+    &.tab-count--online {
+      background: $success;
+      color: #fff;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Stat cards (dashboard)
+// ─────────────────────────────────────────────────────────────────────────────
+
+.stat-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $sp-5;
+  box-shadow: $shadow-xs;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+  transition: box-shadow $duration $ease, transform $duration $ease;
+
+  &:hover {
+    box-shadow: $shadow-sm;
+    transform: translateY(-1px);
+  }
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: $radius-sm;
+    background: $primary-light;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $primary;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $text-muted;
+  }
+
+  &__value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: $gray-900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  &__sub {
+    font-size: 0.8125rem;
+    color: $text-muted;
+
+    &.up   { color: $success; }
+    &.down { color: $danger;  }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alerts
+// ─────────────────────────────────────────────────────────────────────────────
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+  padding: 10px 14px;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  margin-bottom: $sp-4;
+  border: 1px solid transparent;
+
+  &.alert-danger {
+    background: $danger-light;
+    color: $danger;
+    border-color: $danger-border;
+  }
+
+  &.alert-success {
+    background: $success-light;
+    color: $success;
+    border-color: $success-border;
+  }
+
+  &.alert-warning {
+    background: $warning-light;
+    color: $warning;
+    border-color: $warning-border;
+  }
+
+  &.alert-info {
+    background: $info-light;
+    color: $info;
+    border-color: $info-border;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Overlay / modal backdrop
+// ─────────────────────────────────────────────────────────────────────────────
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba($gray-900, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $sp-4;
+}
+
+.panel {
+  background: $surface;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+  width: 100%;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $sp-4 $sp-5;
+    border-bottom: 1px solid $border;
+    flex-shrink: 0;
+
+    h2, h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $sp-5;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: $sp-3;
+    padding: $sp-4 $sp-5;
+    border-top: 1px solid $border;
+    flex-shrink: 0;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Loading
+// ─────────────────────────────────────────────────────────────────────────────
+
+.loading-spinner {
+  @include flex-center;
+  padding: $sp-8;
+
+  &::after {
+    content: '';
+    width: 28px;
+    height: 28px;
+    border: 2px solid $gray-200;
+    border-top-color: $primary;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+.spinner-inline {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.spinner-inline--dark {
+  border-color: rgba($primary, 0.2);
+  border-top-color: $primary;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Empty state
+.empty-state {
+  @include flex-center;
+  flex-direction: column;
+  gap: $sp-3;
+  padding: $sp-10 $sp-6;
+  color: $text-muted;
+  text-align: center;
+
+  &__icon {
+    width: 44px;
+    height: 44px;
+    opacity: 0.35;
+  }
+
+  &__title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $gray-700;
+    margin: 0;
+  }
+
+  &__desc {
+    font-size: 0.875rem;
+    max-width: 320px;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Utilities
+// ─────────────────────────────────────────────────────────────────────────────
+
+.text-center  { text-align: center; }
+.text-right   { text-align: right; }
+.text-muted   { color: $text-muted; }
+.text-danger  { color: $danger; }
+.text-success { color: $success; }
+.text-warning { color: $warning; }
+.text-mono    { font-family: $font-mono; }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+// Spacing
+.mt-1 { margin-top: $sp-2; }
+.mt-2 { margin-top: $sp-4; }
+.mt-3 { margin-top: $sp-6; }
+.mt-4 { margin-top: $sp-8; }
+.mb-1 { margin-bottom: $sp-2; }
+.mb-2 { margin-bottom: $sp-4; }
+.mb-3 { margin-bottom: $sp-6; }
+.mb-4 { margin-bottom: $sp-8; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Responsive
+// ─────────────────────────────────────────────────────────────────────────────
+
+@media (max-width: 768px) {
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1.125rem; }
+
+  .container,
+  .page { padding: $sp-4; }
+
+  .page__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

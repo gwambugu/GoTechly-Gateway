@@ -1,0 +1,63 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Local-machine developer overrides for GoTechly-Gateway
+#
+# Activate alongside the existing profiles:
+#   SPRING_PROFILES_ACTIVE=dev,tls,local
+#
+# What this file changes vs. application-dev.yml:
+#   1. Points the database at a local PostgreSQL (see docker-compose.yml at the repo root)
+#      (localhost:5432/gotechlygwdb, role gotechly_gw).
+#   2. Reduces Core discovery to a single instance (localhost:3131 only).
+#      The dev profile declares three instances (3131/3132/3133); you only
+#      need one running locally.
+#   3. Patches the two external payment ports (MPESA / Daraja) so they use
+#      the embedded gateway keystore instead of file:../certs/*.jks, which
+#      won't exist on a fresh checkout.  Those ports still bind and listen
+#      on 4389 / 4392 — they just share the same cert as the main port.
+#      (external-C2B on 18181 already uses use-server-default: true in dev.)
+# ─────────────────────────────────────────────────────────────────────────────
+
+spring:
+  # ── Local PostgreSQL (localhost:5432/gotechlygwdb) ──
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/gotechlygwdb
+    username: gotechly_gw
+    password: "${SPRING_DATASOURCE_PASSWORD:gotechly_gw}"
+  datasource:
+    url: jdbc:postgresql://localhost:5432/gotechlygwdb
+    username: gotechly_gw
+    password: "${SPRING_DATASOURCE_PASSWORD:gotechly_gw}"
+
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            # Single Core instance — this list replaces the dev list entirely
+            # (Spring Boot replaces YAML lists on profile merge, not appends).
+            gotechly-core:
+              - uri: https://localhost:3131
+                secure: true
+
+gotechly:
+  gateway:
+    # Health-monitor also trimmed to the one instance you have running
+    services:
+      - name: GoTechly-Core-1
+        base-url: https://localhost:3131
+        health-path: /actuator/health
+
+    multi-port:
+      ports:
+        # ── MPESA B2C result port (4389) ─────────────────────────────────────
+        # Dev config points at file:../certs/mpesa-b2c-result-keystore.jks.
+        # Override to reuse the embedded server keystore so the port binds
+        # without needing that file on disk.
+        external-MPESA_RESULT:
+          tls:
+            use-server-default: true
+
+        # ── Daraja inquiry callback port (4392) ──────────────────────────────
+        external-DARAJA-CALLBACK:
+          tls:
+            use-server-default: true

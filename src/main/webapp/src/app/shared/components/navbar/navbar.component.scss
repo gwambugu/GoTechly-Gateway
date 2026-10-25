@@ -1,0 +1,366 @@
+@import 'content/scss/variables';
+
+// ── Sidenav shell ─────────────────────────────────────────────────────────────
+.sidenav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 240px;
+  background: linear-gradient(180deg, lighten($primary, 5%) 0%, $primary 45%, darken($primary, 4%) 100%);
+  border-right: none;
+  box-shadow:
+    4px 0 24px rgba(0, 0, 0, 0.28),
+    2px 0 8px rgba(163, 42, 41, 0.18),
+    inset -1px 0 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: width 200ms $ease;
+  overflow: hidden;
+
+  // Collapsed state — icon-only rail
+  &.collapsed {
+    width: 60px;
+
+    .brand-name,
+    .nav-section-label,
+    .user-meta,
+    .nav-label {
+      opacity: 0;
+      pointer-events: none;
+      max-width: 0;
+      overflow: hidden;
+    }
+
+    // Centre the icons when collapsed — zero gap collapses label space
+    .nav-item {
+      justify-content: center;
+      padding: 9px 0;
+      gap: 0;
+    }
+
+    .sidenav-header {
+      justify-content: center;
+    }
+
+    .brand {
+      display: none;
+    }
+
+    .user-row {
+      justify-content: center;
+    }
+
+    .logout-btn {
+      justify-content: center;
+    }
+  }
+}
+
+// ── Header (brand + collapse toggle) ──────────────────────────────────────────
+.sidenav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 $sp-4;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  text-decoration: none;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+
+.brand-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  transition: opacity 150ms $ease;
+}
+
+.collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: $radius-sm;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background $duration $ease, color $duration $ease, border-color $duration $ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+}
+
+// ── Nav scroll area ───────────────────────────────────────────────────────────
+.sidenav-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: $sp-3 0;
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 4px;
+  }
+}
+
+// ── Nav sections ─────────────────────────────────────────────────────────────
+.nav-section {
+  margin-bottom: $sp-2;
+}
+
+.nav-section-label {
+  display: block;
+  padding: $sp-2 $sp-4 $sp-1;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+  transition: opacity 150ms $ease;
+}
+
+.nav-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 $sp-2;
+}
+
+// ── Nav item ──────────────────────────────────────────────────────────────────
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: 9px $sp-3;
+  border-radius: $radius-sm;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background $duration $ease, color $duration $ease;
+  position: relative;
+  cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+
+  .nav-icon {
+    flex-shrink: 0;
+    transition: color $duration $ease;
+  }
+
+  .nav-label {
+    transition: opacity 150ms $ease;
+    overflow: hidden;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  // Active state — left accent bar + tinted background
+  &.active {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      background: #fff;
+      border-radius: 0 3px 3px 0;
+    }
+
+    .nav-icon {
+      color: #fff;
+    }
+  }
+
+  // Primary variant (Register)
+  &.nav-item--primary {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    margin-top: $sp-1;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+
+    &.active {
+      background: rgba(255, 255, 255, 0.28);
+      color: #fff;
+
+      &::before { display: none; }
+    }
+  }
+}
+
+// ── User footer ───────────────────────────────────────────────────────────────
+.sidenav-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding: $sp-3 $sp-2;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-2 $sp-3;
+  border-radius: $radius-sm;
+  overflow: hidden;
+}
+
+.user-avatar {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  transition: opacity 150ms $ease;
+}
+
+.user-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-role {
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.62);
+  white-space: nowrap;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  width: 100%;
+  padding: 9px $sp-3;
+  background: none;
+  border: none;
+  border-radius: $radius-sm;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background $duration $ease, color $duration $ease;
+
+  .nav-label {
+    transition: opacity 150ms $ease;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+
+    .nav-icon {
+      color: #fff;
+    }
+  }
+}
+
+// ── Mobile backdrop ────────────────────────────────────────────────────────────
+.sidenav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 199; // just below the sidenav (z-index: 200)
+}
+
+// ── Responsive layout ─────────────────────────────────────────────────────────
+//
+// Below 1024 px the sidenav slides completely off-screen.
+// A hamburger button in the mobile topbar (rendered by app.html) slides it back in.
+// The collapsed/icon-rail state is desktop-only; on mobile the nav is always full-width.
+
+@media (max-width: 1023px) {
+  .sidenav {
+    // Slide off-screen by default
+    transform: translateX(-100%);
+    transition: width 200ms $ease, transform 200ms $ease, box-shadow 200ms $ease;
+
+    // Always full-width on mobile — override the 60px collapsed rail
+    &.collapsed {
+      width: 240px;
+
+      // Undo the collapsed visual tweaks so labels / brand stay visible
+      .brand-name,
+      .nav-section-label,
+      .user-meta,
+      .logout-btn .nav-label,
+      .nav-label { opacity: 1; pointer-events: auto; max-width: none; overflow: visible; }
+
+      .nav-item { justify-content: flex-start; padding: 9px $sp-3; }
+      .sidenav-header { justify-content: space-between; }
+      .brand { display: flex; }
+      .user-row { justify-content: flex-start; }
+      .logout-btn { justify-content: flex-start; }
+    }
+
+    // Slide in when the hamburger is pressed
+    &.mobile-open {
+      transform: translateX(0);
+      box-shadow: $shadow-lg;
+    }
+  }
+}

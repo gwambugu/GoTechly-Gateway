@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!--
+        Machine-to-machine credentials: a client_id / client_secret pair exchanged for a JWT at
+        POST /api/auth/token. Separate from `users` on purpose — an API client has no password
+        reset, no email, no AD identity, and must never appear in the human user lists.
+
+        Only the BCrypt hash of the secret is stored; the plaintext is shown once at creation and
+        is unrecoverable afterwards (rotate issues a new one).
+    -->
+    <changeSet id="20260813120000-1" author="gotechly-gateway">
+        <createTable tableName="api_client">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_id" type="varchar(64)">
+                <constraints unique="true" nullable="false" uniqueConstraintName="uk_api_client_id"/>
+            </column>
+            <!-- BCrypt output is always 60 chars. -->
+            <column name="client_secret_hash" type="varchar(60)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+            <column name="enabled" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <!-- Null means the credential does not expire on its own. -->
+            <column name="expires_at" type="TIMESTAMP(6)"/>
+            <column name="created_by" type="varchar(254)"/>
+            <column name="created_date" type="TIMESTAMP(6)"/>
+            <column name="last_used_date" type="TIMESTAMP(6)"/>
+        </createTable>
+    </changeSet>
+
+    <!--
+        The single authority every API client token carries. Deliberately narrow: it satisfies the
+        `.authenticated()` rule guarding /services/core/payment/api/**, and nothing else — the
+        ADMIN and PARTNER_* rules stay out of reach of a non-human credential.
+        Seeded here so the role appears in the admin authority list like any other.
+    -->
+    <changeSet id="20260813120000-2" author="gotechly-gateway">
+        <insert tableName="authority">
+            <column name="name" value="ROLE_API_CLIENT"/>
+        </insert>
+        <rollback>
+            <delete tableName="authority">
+                <where>name = 'ROLE_API_CLIENT'</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

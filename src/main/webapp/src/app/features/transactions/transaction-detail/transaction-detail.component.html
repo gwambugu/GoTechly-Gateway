@@ -1,0 +1,367 @@
+<div class="detail-page">
+
+  <!-- ── Page header ─────────────────────────────────────────────── -->
+  <div class="detail-header">
+    <a [routerLink]="['/transactions']" [queryParams]="{source: transactionSource}"
+       class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Transactions
+    </a>
+
+    @if (transaction()) {
+      <div class="detail-title-row">
+        <h1 class="detail-title">Transaction #{{ transaction()!.id }}</h1>
+        @if (transaction()!.status) {
+          <span class="status-badge"
+                [class.badge-success]="transaction()!.status === 'SUCCESS'"
+                [class.badge-danger]="transaction()!.status === 'FAILED'"
+                [class.badge-warning]="transaction()!.status === 'PENDING'">
+            {{ transaction()!.status }}
+          </span>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── Loading skeleton ────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="hero-card skeleton-card">
+      <div class="sk sk--xl"></div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:8px">
+        <div class="sk sk--lg"></div>
+        <div class="sk sk--md"></div>
+      </div>
+    </div>
+    @for (i of [1,2,3]; track i) {
+      <div class="section skeleton-section">
+        <div class="sk sk--lg" style="margin: 14px 16px"></div>
+      </div>
+    }
+  }
+
+  @if (!loading() && !transaction()) {
+    <div class="empty-state">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <p>Transaction not found.</p>
+    </div>
+  }
+
+  @if (!loading() && transaction(); as tx) {
+
+    <!-- ── Hero card ─────────────────────────────────────────────── -->
+    <div class="hero-card">
+      <div class="hero-amount">
+        @if (tx.amount != null) {
+          <span class="hero-amount-value">{{ tx.amount | number:'1.2-2' }}</span>
+          <span class="hero-amount-currency">{{ tx.currencyCode }}</span>
+        } @else {
+          <span class="hero-amount-value">—</span>
+        }
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-meta">
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Request ID</span>
+          <span class="hero-meta-value mono">{{ tx.requestId || '—' }}</span>
+        </div>
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Type</span>
+          <span class="hero-meta-value">
+            @if (tx.paymentType) {
+              <span class="badge badge-type">{{ tx.paymentType }}</span>
+            } @else { — }
+          </span>
+        </div>
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Direction</span>
+          <span class="hero-meta-value">{{ tx.direction || '—' }}</span>
+        </div>
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Source</span>
+          <span class="hero-meta-value">{{ tx.sourceSystem || '—' }}</span>
+        </div>
+      </div>
+      <div class="hero-divider"></div>
+      <div class="hero-meta">
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Response Code</span>
+          <span class="hero-meta-value mono">{{ tx.responseCode || '—' }}</span>
+        </div>
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Response</span>
+          <span class="hero-meta-value">{{ tx.responseDesc || '—' }}</span>
+        </div>
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Request Type</span>
+          <span class="hero-meta-value">{{ tx.requestType || '—' }}</span>
+        </div>
+        <div class="hero-meta-row">
+          <span class="hero-meta-label">Timestamp</span>
+          <span class="hero-meta-value mono">{{ (tx.requestTimestamp | date:'dd MMM yyyy, HH:mm:ss') || '—' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Sender + Receiver (side by side) ──────────────────────── -->
+    <div class="section-pair">
+
+      <!-- Sender -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('sender')">
+          <svg class="section-chevron" [class.open]="expandedSections['sender']"
+               xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <span class="section-icon section-icon--sender">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+          <h2>Sender</h2>
+        </button>
+        @if (expandedSections['sender']) {
+          <div class="section-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>MSISDN</label>
+                <span>{{ tx.senderMsisdn || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Account</label>
+                <span>{{ tx.senderAccountNumber || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Name</label>
+                <span>{{ tx.senderSenderName || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Type</label>
+                <span>{{ tx.senderType || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Receiver -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('receiver')">
+          <svg class="section-chevron" [class.open]="expandedSections['receiver']"
+               xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <span class="section-icon section-icon--receiver">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </span>
+          <h2>Receiver</h2>
+        </button>
+        @if (expandedSections['receiver']) {
+          <div class="section-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>MSISDN</label>
+                <span>{{ tx.receiverMsisdn || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Account</label>
+                <span>{{ tx.receiverAccountNumber || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Name</label>
+                <span>{{ tx.receiverReceiverName || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Type</label>
+                <span>{{ tx.receiverType || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── CBS + PSP (side by side) ──────────────────────────────── -->
+    <div class="section-pair">
+
+      <!-- Core Banking -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('cbs')">
+          <svg class="section-chevron" [class.open]="expandedSections['cbs']"
+               xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <span class="section-icon section-icon--cbs">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+              <line x1="6" y1="6" x2="6.01" y2="6"></line>
+              <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            </svg>
+          </span>
+          <h2>Core Banking (CBS)</h2>
+        </button>
+        @if (expandedSections['cbs']) {
+          <div class="section-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>Tran Ref</label>
+                <span class="mono">{{ tx.cbsTranRef || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Response Code</label>
+                <span class="mono">{{ tx.cbsRespCode || '—' }}</span>
+              </div>
+              <div class="field field--wide">
+                <label>Response Desc</label>
+                <span>{{ tx.cbsRespDesc || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Debit Account</label>
+                <span>{{ tx.cbsDrAcc || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Credit Account</label>
+                <span>{{ tx.cbsCrAcc || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- PSP -->
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('psp')">
+          <svg class="section-chevron" [class.open]="expandedSections['psp']"
+               xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <span class="section-icon section-icon--psp">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 3h-8l-2 4h12z"></path>
+            </svg>
+          </span>
+          <h2>PSP</h2>
+        </button>
+        @if (expandedSections['psp']) {
+          <div class="section-body">
+            <div class="field-grid">
+              <div class="field">
+                <label>Response Code</label>
+                <span class="mono">{{ tx.pspResponseCode || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Result Code</label>
+                <span class="mono">{{ tx.pspResultCode || '—' }}</span>
+              </div>
+              <div class="field field--wide">
+                <label>Response Desc</label>
+                <span>{{ tx.pspResponseDesc || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>Reference</label>
+                <span class="mono">{{ tx.pspReferenceCode || '—' }}</span>
+              </div>
+              <div class="field">
+                <label>PSP Request ID</label>
+                <span class="mono">{{ tx.pspRequestID || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Additional Fields ──────────────────────────────────────── -->
+    @if (hasAdditionalFields(tx)) {
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('additional')">
+          <svg class="section-chevron" [class.open]="expandedSections['additional']"
+               xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <h2>Additional Fields</h2>
+        </button>
+        @if (expandedSections['additional']) {
+          <div class="section-body">
+            <div class="kv-table">
+              @for (entry of getAdditionalFieldEntries(tx.detailsAdditionalFields); track entry[0]) {
+                <div class="kv-row">
+                  <span class="kv-key">{{ entry[0] }}</span>
+                  <span class="kv-value">{{ entry[1] }}</span>
+                </div>
+              }
+              @for (entry of getAdditionalFieldEntries(tx.senderAdditionalFields); track entry[0]) {
+                <div class="kv-row">
+                  <span class="kv-key"><span class="kv-ns">sender.</span>{{ entry[0] }}</span>
+                  <span class="kv-value">{{ entry[1] }}</span>
+                </div>
+              }
+              @for (entry of getAdditionalFieldEntries(tx.receiverAdditionalFields); track entry[0]) {
+                <div class="kv-row">
+                  <span class="kv-key"><span class="kv-ns">receiver.</span>{{ entry[0] }}</span>
+                  <span class="kv-value">{{ entry[1] }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Audit Trail ────────────────────────────────────────────── -->
+    @if (tx.requestId) {
+      <div class="section">
+        <button class="section-header" (click)="toggleSection('audit')">
+          <svg class="section-chevron" [class.open]="expandedSections['audit']"
+               xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+               viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+               stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+          <h2>Audit Trail</h2>
+        </button>
+        @if (expandedSections['audit']) {
+          <div class="section-body section-body--flush">
+            <app-audit-trail [requestId]="tx.requestId!" />
+          </div>
+        }
+      </div>
+    }
+
+  }
+</div>

@@ -1,0 +1,326 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Page header ───────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-muted;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: $font;
+  transition: color $duration $ease;
+  width: fit-content;
+
+  &:hover { color: $primary; }
+}
+
+.page-title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+// ── Alert ─────────────────────────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  &.alert-error { background: $danger-light; color: $danger; border: 1px solid $danger-border; }
+}
+
+.alert-body {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.alert-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 2px;
+  border-radius: 4px;
+  transition: opacity $duration $ease;
+  flex-shrink: 0;
+
+  &:hover { opacity: 1; }
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position:  600px 0; }
+}
+
+.skeleton-section {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.sk {
+  display: block;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite;
+
+  &.sk--head  { height: 44px; }
+  &.sk--field { height: 56px; margin: $sp-3 $sp-4; }
+}
+
+.sk-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+// ── Form section card ─────────────────────────────────────────────────────────
+.form-section {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.form-section-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4;
+  background: $gray-50;
+  border-bottom: 1px solid $border;
+
+  h2 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: $text;
+    margin: 0;
+  }
+}
+
+.section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  background: $primary-light;
+  color: $primary;
+
+  &.section-icon--contact    { background: $success-light; color: $success; }
+  &.section-icon--security   { background: $warning-light; color: $warning; }
+  &.section-icon--compliance { background: $info-light;    color: $info; }
+}
+
+.form-section-body {
+  padding: $sp-4 $sp-5;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+// ── Form grid ─────────────────────────────────────────────────────────────────
+.form-grid {
+  display: grid;
+  gap: $sp-3;
+
+  &.form-grid--2 { grid-template-columns: 1fr 1fr; }
+  &.form-grid--3 { grid-template-columns: 1fr 1fr 1fr; }
+}
+
+// ── Form field ────────────────────────────────────────────────────────────────
+.fg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  input:not([type="file"]), select {
+    padding: 7px 10px;
+    border: 1px solid $gray-300;
+    border-radius: $radius-sm;
+    font-size: 0.8125rem;
+    font-family: $font;
+    color: $text;
+    background: $surface;
+    outline: none;
+    transition: border-color $duration $ease, box-shadow $duration $ease;
+    width: 100%;
+    box-sizing: border-box;
+
+    &::placeholder { color: $text-subtle; }
+
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.10);
+    }
+  }
+}
+
+.required { color: $danger; }
+
+.field-error {
+  font-size: 0.6875rem;
+  color: $danger;
+}
+
+.field-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: $success;
+}
+
+// ── File input ────────────────────────────────────────────────────────────────
+.input-file {
+  padding: 6px 10px;
+  border: 1px dashed $gray-300;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  background: $gray-50;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: border-color $duration $ease;
+
+  &:hover { border-color: $primary; }
+}
+
+// ── Textarea ──────────────────────────────────────────────────────────────────
+.field-textarea {
+  width: 100%;
+  padding: $sp-3;
+  border: 1px solid $gray-300;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font-mono;
+  color: $text;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color $duration $ease, box-shadow $duration $ease;
+
+  &::placeholder { color: $text-subtle; font-family: $font; }
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.10);
+  }
+}
+
+// ── Form footer ───────────────────────────────────────────────────────────────
+.form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: $sp-2;
+  padding-top: $sp-2;
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.btn-ghost {
+  padding: 7px 16px;
+  background: transparent;
+  color: $text-muted;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 7px 18px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease, box-shadow $duration $ease;
+
+  &:hover:not(:disabled) { background: $primary-hover; box-shadow: $shadow-sm; }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 860px) {
+  .page { padding: $sp-4; }
+  .form-section-body { padding: $sp-4; }
+  .form-grid.form-grid--3 { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 600px) {
+  .form-grid.form-grid--2,
+  .form-grid.form-grid--3 { grid-template-columns: 1fr; }
+}

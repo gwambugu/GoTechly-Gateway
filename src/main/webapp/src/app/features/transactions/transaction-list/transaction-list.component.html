@@ -1,0 +1,195 @@
+<div class="txn-page">
+
+  <!-- ── Toolbar ───────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <h1 class="page-title">Transactions</h1>
+      @if (!loading()) {
+        <span class="count-badge">{{ totalCount() | number }} total</span>
+      }
+    </div>
+
+    <!-- Source tabs -->
+    <div class="source-tabs">
+      <button class="source-tab" [class.active]="transactionSource === 'active'"
+              (click)="switchSource('active')">
+        @if (transactionSource === 'active') {
+          <span class="tab-dot tab-dot--active"></span>
+        } @else {
+          <span class="tab-dot"></span>
+        }
+        Active
+      </button>
+      <button class="source-tab" [class.active]="transactionSource === 'history'"
+              (click)="switchSource('history')">
+        @if (transactionSource === 'history') {
+          <span class="tab-dot tab-dot--active"></span>
+        } @else {
+          <span class="tab-dot"></span>
+        }
+        History
+      </button>
+      <button class="source-tab" [class.active]="transactionSource === 'pending'"
+              (click)="switchSource('pending')">
+        @if (transactionSource === 'pending') {
+          <span class="tab-dot tab-dot--active"></span>
+        } @else {
+          <span class="tab-dot"></span>
+        }
+        Pending
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filter bar ─────────────────────────────────────────────── -->
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <input type="text" class="search-input" placeholder="Search by request ID…"
+             [(ngModel)]="searchRequestId" (keyup.enter)="applyFilters()">
+    </div>
+
+    <select class="filter-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+      <option value="">All statuses</option>
+      <option value="SUCCESS">Success</option>
+      <option value="FAILED">Failed</option>
+      <option value="PENDING">Pending</option>
+    </select>
+
+    <select class="filter-select" [(ngModel)]="filterPaymentType" (change)="applyFilters()">
+      <option value="">All types</option>
+      <option value="MPESA">MPESA</option>
+      <option value="WENDI">WENDI</option>
+      <option value="RNDPS">RNDPS</option>
+    </select>
+
+    <button class="btn-search" (click)="applyFilters()">
+      Search
+    </button>
+
+    @if (hasActiveFilters()) {
+      <button class="btn-clear" (click)="clearFilters()" title="Clear all filters">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Clear
+      </button>
+    }
+  </div>
+
+  <!-- ── Table ──────────────────────────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Request ID</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Resp Code</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Loading skeleton rows -->
+          @if (loading()) {
+            @for (row of skeletonRows; track $index) {
+              <tr class="skeleton-row">
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+              </tr>
+            }
+          }
+
+          <!-- Data rows -->
+          @if (!loading()) {
+            @for (tx of transactions(); track tx.id) {
+              <tr [routerLink]="['/transactions', tx.id]"
+                  [queryParams]="{source: transactionSource}"
+                  class="data-row">
+                <td class="cell-mono">{{ tx.requestId || '—' }}</td>
+                <td>
+                  @if (tx.paymentType) {
+                    <span class="badge badge-type">{{ tx.paymentType }}</span>
+                  } @else { <span class="cell-empty">—</span> }
+                </td>
+                <td class="cell-amount">
+                  @if (tx.amount != null) {
+                    {{ tx.amount | number:'1.2-2' }}
+                    <span class="cell-currency">{{ tx.currencyCode }}</span>
+                  } @else { <span class="cell-empty">—</span> }
+                </td>
+                <td>
+                  @if (tx.status) {
+                    <span class="badge"
+                          [class.badge-success]="tx.status === 'SUCCESS' || tx.status === 'COMPLETED' || tx.status === 'RESOLVED' || tx.status === 'OK'"
+                          [class.badge-danger]="tx.status === 'FAILED' || tx.status ==='REJECTED'"
+                          [class.badge-warning]="tx.status === 'PENDING'">
+                      {{ tx.status }}
+                    </span>
+                  } @else { <span class="cell-empty">—</span> }
+                </td>
+                <td class="cell-mono cell-code">{{ tx.responseCode || '—' }}</td>
+                <td class="cell-secondary">{{ tx.senderMsisdn || tx.senderAccountNumber || '—' }}</td>
+                <td class="cell-secondary">{{ tx.receiverMsisdn || tx.receiverAccountNumber || '—' }}</td>
+                <td class="cell-time">{{ (tx.requestTimestamp | date:'dd MMM, HH:mm') || '—' }}</td>
+              </tr>
+            }
+
+            <!-- Empty state -->
+            @if (transactions().length === 0) {
+              <tr>
+                <td colspan="8">
+                  <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="12" y1="1" x2="12" y2="23"></line>
+                      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    <p class="empty-title">No transactions found</p>
+                    <p class="empty-sub">
+                      @if (hasActiveFilters()) {
+                        Try clearing your filters
+                      } @else {
+                        No {{ transactionSource }} transactions available
+                      }
+                    </p>
+                    @if (hasActiveFilters()) {
+                      <button class="btn-clear" (click)="clearFilters()">Clear filters</button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    @if (!loading() && transactions().length > 0) {
+      <div class="table-footer">
+        <app-pagination
+          [currentPage]="currentPage"
+          [totalItems]="totalCount()"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)" />
+      </div>
+    }
+  </div>
+
+</div>

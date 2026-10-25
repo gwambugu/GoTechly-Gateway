@@ -1,0 +1,302 @@
+<div class="page">
+
+  <!-- ── Toolbar ───────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <h1 class="page-title">Partner Management</h1>
+      @if (!loading()) {
+        <span class="count-badge">{{ totalItems() | number }}</span>
+      }
+    </div>
+    @if (isMaker()) {
+      <a routerLink="/partners/new" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2.5"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        New Partner
+      </a>
+    }
+  </div>
+
+  <!-- ── Alerts ────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        {{ error() }}
+      </div>
+      <button class="alert-close" (click)="clearMessages()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  }
+
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      <div class="alert-body">
+        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        {{ successMessage() }}
+      </div>
+    </div>
+  }
+
+  <!-- ── Tab nav + Search row ──────────────────────────────────── -->
+  <div class="controls">
+    <div class="tab-nav">
+      <button class="tab" [class.active]="activeTab() === 'all'"       (click)="setActiveTab('all')">All</button>
+      <button class="tab" [class.active]="activeTab() === 'pending'"   (click)="setActiveTab('pending')">
+        <span class="tab-dot tab-dot--warning"></span>Pending
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'active'"    (click)="setActiveTab('active')">
+        <span class="tab-dot tab-dot--success"></span>Active
+      </button>
+      <button class="tab" [class.active]="activeTab() === 'suspended'" (click)="setActiveTab('suspended')">
+        <span class="tab-dot tab-dot--danger"></span>Suspended
+      </button>
+    </div>
+
+    <div class="search-bar">
+      <div class="search-wrap">
+        <input type="text" class="search-input" placeholder="Search by short name…"
+               [(ngModel)]="searchQuery" (keyup.enter)="search()">
+      </div>
+      <button class="btn-search" (click)="search()">Search</button>
+    </div>
+  </div>
+
+  <!-- ── Table card ────────────────────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Legal Name</th>
+            <th>Short Name</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Contact</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          @if (loading()) {
+            @for (i of [1,2,3,4,5,6]; track i) {
+              <tr class="skeleton-row">
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--lg"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+                <td><span class="sk sk--xs"></span></td>
+                <td><span class="sk sk--md"></span></td>
+                <td><span class="sk sk--sm"></span></td>
+              </tr>
+            }
+          }
+
+          @if (!loading()) {
+            @for (partner of partners(); track partner.id) {
+              <tr class="data-row">
+                <td class="cell-mono">{{ partner.partnerCode || '—' }}</td>
+                <td>
+                  <button class="name-link" (click)="viewPartner(partner)">{{ partner.legalName }}</button>
+                </td>
+                <td class="cell-secondary">{{ partner.clientShortName }}</td>
+                <td>
+                  @if (partner.partnerType) {
+                    <span class="type-badge">{{ typeLabels[partner.partnerType] }}</span>
+                  }
+                </td>
+                <td>
+                  <span class="status-pill" [ngClass]="getStatusClass(partner.status)">
+                    {{ partner.status ? statusLabels[partner.status] : '—' }}
+                  </span>
+                </td>
+                <td class="contact-cell">
+                  <span>{{ partner.contactEmail }}</span>
+                  <span class="contact-phone">{{ partner.contactPhone }}</span>
+                </td>
+                <td>
+                  <div class="row-actions">
+                    <button class="icon-btn icon-btn--view" (click)="viewPartner(partner)" title="View details">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                           fill="none" stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+
+                    @if (isMaker() && partner.status === 'PENDING_APPROVAL') {
+                      <button class="icon-btn icon-btn--edit" (click)="editPartner(partner)" title="Edit">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                      </button>
+                    }
+
+                    @if (isChecker() && partner.status === 'PENDING_APPROVAL') {
+                      <button class="icon-btn icon-btn--approve" (click)="approvePartner(partner)" title="Approve">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                      </button>
+                      <button class="icon-btn icon-btn--reject" (click)="showRejectDialog(partner)" title="Reject">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    }
+
+                    @if (isChecker() && partner.status === 'ACTIVE') {
+                      <button class="icon-btn icon-btn--suspend" (click)="suspendPartner(partner)" title="Suspend">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="6" y="4" width="4" height="16"></rect>
+                          <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                      </button>
+                    }
+
+                    @if (isChecker() && partner.status === 'SUSPENDED') {
+                      <button class="icon-btn icon-btn--activate" (click)="activatePartner(partner)" title="Activate">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                      </button>
+                    }
+
+                    @if (isAdmin()) {
+                      <button class="icon-btn icon-btn--delete" (click)="deletePartner(partner)" title="Delete">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2"
+                             stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3 6 5 6 21 6"></polyline>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                          <path d="M10 11v6"></path>
+                          <path d="M14 11v6"></path>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+
+            @if (partners().length === 0) {
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="9" cy="7" r="4"></circle>
+                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <p class="empty-title">No partners found</p>
+                    <p class="empty-sub">
+                      @if (searchQuery) { Try a different search term }
+                      @else if (activeTab() !== 'all') { No {{ activeTab() }} partners }
+                      @else { No partners have been created yet }
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (!loading() && partners().length > 0) {
+      <div class="table-footer">
+        <app-pagination
+          [currentPage]="currentPage()"
+          [totalItems]="totalItems()"
+          [pageSize]="pageSize()"
+          (pageChange)="onPageChange($event)"
+          (pageSizeChange)="onPageSizeChange($event)" />
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- ── Reject modal ───────────────────────────────────────────── -->
+@if (rejectPartnerId() !== null) {
+  <div class="modal-overlay" (click)="cancelReject()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-header-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+        </div>
+        <div class="modal-header-text">
+          <h3>Reject Partner</h3>
+          <p>Provide a reason that will be visible to the maker.</p>
+        </div>
+        <button class="modal-close" (click)="cancelReject()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label class="field-label" for="rejectRemarks">Rejection Reason <span class="required">*</span></label>
+        <textarea
+          id="rejectRemarks"
+          class="field-textarea"
+          [(ngModel)]="rejectRemarks"
+          rows="4"
+          placeholder="Describe the reason for rejection…">
+        </textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="cancelReject()">Cancel</button>
+        <button class="btn-danger" [disabled]="!rejectRemarks.trim()" (click)="confirmReject()">
+          Confirm Rejection
+        </button>
+      </div>
+    </div>
+  </div>
+}

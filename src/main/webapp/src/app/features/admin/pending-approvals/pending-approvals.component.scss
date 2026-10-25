@@ -1,0 +1,461 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.total-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: $primary-light;
+  color: $primary;
+  border: 1px solid rgba($primary, 0.2);
+}
+
+// ── Filter bar ────────────────────────────────────────────────────────────────
+// Unified toolbar on one row.
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 3px;
+  width: fit-content;
+  box-shadow: $shadow-xs;
+}
+
+.filter-select {
+  padding: 5px 10px;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  color: $text-muted;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+  &:focus { background: $gray-100; color: $text; }
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position:  600px 0; }
+}
+
+.sk {
+  display: inline-block;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite;
+
+  &.sk--xs { width: 40px;  height: 12px; }
+  &.sk--sm { width: 72px;  height: 12px; }
+  &.sk--md { width: 110px; height: 12px; }
+  &.sk--lg { width: 200px; height: 12px; }
+}
+
+.skeleton-row td { padding: 12px; }
+
+// ── Empty card ────────────────────────────────────────────────────────────────
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-12 $sp-8;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  color: $text-subtle;
+
+  .empty-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin: $sp-2 0 0;
+  }
+
+  .empty-sub {
+    font-size: 0.8125rem;
+    color: $text-subtle;
+    margin: 0;
+  }
+}
+
+// ── Table card ────────────────────────────────────────────────────────────────
+.table-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.table-scroll { overflow-x: auto; }
+
+// ── Data table ────────────────────────────────────────────────────────────────
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 9px 12px;
+    font-size: 0.8125rem;
+    color: $text;
+    border-top: 1px solid $gray-100;
+    vertical-align: middle;
+  }
+
+  .data-row {
+    cursor: pointer;
+    &:hover td { background: $gray-50; }
+  }
+}
+
+.cell-id {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.cell-desc {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-timestamp {
+  font-size: 0.75rem;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+// ── Type badge ────────────────────────────────────────────────────────────────
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: $primary-light;
+  color: $primary;
+  border: 1px solid rgba($primary, 0.2);
+}
+
+// ── Change badge ──────────────────────────────────────────────────────────────
+.change-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+
+  &.change-badge--create { background: $success-light; color: $success; border: 1px solid $success-border; }
+  &.change-badge--update { background: $primary-light;  color: $primary;  border: 1px solid rgba($primary, 0.2); }
+}
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+
+  &.status-badge--pending  { background: $warning-light; color: $warning; border: 1px solid $warning-border; }
+  &.status-badge--approved { background: $success-light; color: $success; border: 1px solid $success-border; }
+  &.status-badge--rejected { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+}
+
+// ── Detail overlay ────────────────────────────────────────────────────────────
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 2000;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 60px $sp-4 $sp-4;
+  overflow-y: auto;
+}
+
+.detail-panel {
+  background: $surface;
+  border-radius: $radius;
+  width: 700px;
+  max-width: 95vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: $shadow-lg;
+  border: 1px solid $border;
+}
+
+// ── Detail header ─────────────────────────────────────────────────────────────
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: $sp-4 $sp-5;
+  border-bottom: 1px solid $border;
+  gap: $sp-3;
+}
+
+.detail-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.detail-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0;
+}
+
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: $text-subtle;
+  cursor: pointer;
+  padding: $sp-1;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+  transition: color $duration $ease, background $duration $ease;
+
+  &:hover { color: $text; background: $gray-100; }
+}
+
+// ── Detail body ───────────────────────────────────────────────────────────────
+.detail-body {
+  padding: $sp-5;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Meta section ──────────────────────────────────────────────────────────────
+.meta-section {
+  background: $gray-50;
+  border: 1px solid $gray-100;
+  border-radius: $radius-sm;
+  padding: $sp-3 $sp-4;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+}
+
+.meta-row {
+  display: flex;
+  gap: $sp-3;
+  font-size: 0.8125rem;
+  padding: 3px 0;
+}
+
+.meta-label {
+  color: $text-muted;
+  font-weight: 500;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.meta-value {
+  color: $text;
+
+  &.meta-value--remarks {
+    font-style: italic;
+    color: $danger;
+  }
+}
+
+// ── Diff section ──────────────────────────────────────────────────────────────
+.diff-heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.diff-table-wrap {
+  overflow-x: auto;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+}
+
+.diff-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 7px 10px;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  tbody tr {
+    border-top: 1px solid $gray-100;
+
+    &.diff-row--changed { background: rgba($warning, 0.06); }
+  }
+
+  td {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    vertical-align: top;
+  }
+}
+
+.cell-field-name {
+  font-family: $font-mono;
+  font-weight: 500;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.cell-mono {
+  font-family: $font-mono;
+  word-break: break-all;
+  max-width: 260px;
+
+  &.cell-mono--old { color: $danger; }
+  &.cell-mono--new { color: $success; }
+}
+
+// ── Detail footer ─────────────────────────────────────────────────────────────
+.detail-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $sp-4 $sp-5;
+  border-top: 1px solid $border;
+  gap: $sp-3;
+}
+
+.reject-section {
+  display: flex;
+  gap: $sp-2;
+  flex: 1;
+}
+
+.remarks-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid $gray-300;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  color: $text;
+  background: $surface;
+  outline: none;
+  transition: border-color $duration $ease;
+
+  &::placeholder { color: $text-subtle; }
+  &:focus { border-color: $primary; box-shadow: 0 0 0 3px rgba($primary, 0.10); }
+}
+
+// ── Action buttons ────────────────────────────────────────────────────────────
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background $duration $ease, color $duration $ease, border-color $duration $ease;
+
+  &.btn-action--reject {
+    background: $surface;
+    color: $danger;
+    border: 1px solid $danger-border;
+    &:hover { background: $danger; color: #fff; }
+  }
+
+  &.btn-action--approve {
+    background: $success;
+    color: #fff;
+    border: 1px solid $success;
+    &:hover { background: darken($success, 8%); }
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .page { padding: $sp-4; }
+  .detail-footer { flex-direction: column; align-items: stretch; }
+  .reject-section { flex-direction: column; }
+}

@@ -1,0 +1,263 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  flex-wrap: wrap;
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 6px 12px;
+  background: $surface;
+  color: $text-muted;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+
+  &.btn-ghost--info {
+    color: $info;
+    border-color: $info-border;
+    background: $info-light;
+    &:hover { background: darken($info-light, 3%); }
+  }
+}
+
+.auto-refresh-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] { cursor: pointer; accent-color: $primary; }
+}
+
+// ── Alert ─────────────────────────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  &.alert-error { background: $danger-light; color: $danger; border: 1px solid $danger-border; }
+}
+
+.alert-body { display: flex; align-items: center; gap: $sp-2; }
+
+// ── KPI grid ──────────────────────────────────────────────────────────────────
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: $sp-3;
+}
+
+.kpi-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $sp-4 $sp-5;
+  box-shadow: $shadow-xs;
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+
+  &.kpi-value--success { color: $success; }
+  &.kpi-value--danger  { color: $danger; }
+}
+
+.kpi-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+// ── Table card ────────────────────────────────────────────────────────────────
+.table-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.table-scroll { overflow-x: auto; }
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position:  600px 0; }
+}
+
+.sk {
+  display: inline-block;
+  border-radius: $radius-sm;
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 1200px 100%;
+  animation: shimmer 1.4s infinite;
+
+  &.sk--xs { width: 56px;  height: 12px; }
+  &.sk--md { width: 120px; height: 12px; }
+  &.sk--lg { width: 180px; height: 12px; }
+}
+
+// ── Data table ────────────────────────────────────────────────────────────────
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 9px 12px;
+    font-size: 0.8125rem;
+    color: $text;
+    border-top: 1px solid $gray-100;
+    vertical-align: middle;
+  }
+
+  .skeleton-row td { padding: 11px 12px; }
+  .data-row:hover td { background: $gray-50; }
+}
+
+.cell-mono {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: $text;
+}
+
+// ── Latency bar ───────────────────────────────────────────────────────────────
+.latency-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.latency-track {
+  width: 100px;
+  height: 4px;
+  background: $gray-200;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.latency-bar {
+  height: 4px;
+  background: $primary;
+  border-radius: 2px;
+  transition: width 0.3s $ease;
+}
+
+// ── Error rate badge ──────────────────────────────────────────────────────────
+.rate-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+
+  &.rate-badge--green  { background: $success-light; color: $success; border: 1px solid $success-border; }
+  &.rate-badge--yellow { background: $warning-light; color: $warning; border: 1px solid $warning-border; }
+  &.rate-badge--red    { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $sp-10 $sp-8;
+  gap: $sp-2;
+  color: $text-subtle;
+
+  .empty-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin: $sp-1 0 0;
+  }
+
+  .empty-sub {
+    font-size: 0.8125rem;
+    color: $text-subtle;
+    margin: 0;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .page { padding: $sp-4; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .toolbar { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr; }
+}

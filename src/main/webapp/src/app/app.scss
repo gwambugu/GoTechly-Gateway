@@ -1,0 +1,35 @@
+@import 'content/scss/variables';
+
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidenav-width);
+  min-width: 0;
+  transition: margin-left 200ms $ease;
+}
+
+.main-content {
+  flex: 1;
+  background: $bg;
+}
+
+// ── Responsive breakpoint ─────────────────────────────────────────────────────
+// Below 1024 px the sidenav slides off-screen (handled in navbar.component.scss).
+// The app-body must lose its left margin so content fills the full viewport.
+
+@media (max-width: 1023px) {
+  .app-body {
+    margin-left: 0;
+  }
+}

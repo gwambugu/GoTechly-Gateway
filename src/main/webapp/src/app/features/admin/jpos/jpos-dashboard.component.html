@@ -1,0 +1,280 @@
+<div class="page">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────── -->
+  <div class="toolbar">
+    <h1 class="page-title">Transaction Managers</h1>
+    <div class="toolbar-actions">
+      <button class="btn-ghost btn-ghost--info" (click)="showScaleTmCountPanel.set(!showScaleTmCountPanel())">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        Scale TM Count
+      </button>
+      <button class="btn-ghost" (click)="loadData()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+      <label class="auto-refresh-toggle">
+        <input type="checkbox" [checked]="autoRefresh()" (change)="toggleAutoRefresh()" />
+        <span>Auto-refresh (10s)</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Alerts ─────────────────────────────────────────────────── -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  @if (actionMessage()) {
+    <div class="alert alert-success" (click)="clearMessages()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      {{ actionMessage() }}
+    </div>
+  }
+
+  @if (actionError()) {
+    <div class="alert alert-error" (click)="clearMessages()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      {{ actionError() }}
+    </div>
+  }
+
+  <!-- ── Global summary KPI cards ───────────────────────────────── -->
+  @if (instances().length > 0) {
+    @let s = getTotalSummary();
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-value">{{ instances().length }}</div>
+        <div class="kpi-label">Instances</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.totalTMs }}</div>
+        <div class="kpi-label">Transaction Managers</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.totalSessions }}</div>
+        <div class="kpi-label">Total Sessions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" [class.kpi-value--success]="s.totalActive > 0">{{ s.totalActive }}</div>
+        <div class="kpi-label">Active Sessions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value">{{ s.totalIdle }}</div>
+        <div class="kpi-label">Idle Sessions</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" [class.kpi-value--warning]="s.totalOutstanding > 0">{{ s.totalOutstanding }}</div>
+        <div class="kpi-label">Outstanding</div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Scale TM Count panel ───────────────────────────────────── -->
+  @if (showScaleTmCountPanel()) {
+    <div class="scale-panel">
+      <p class="scale-panel-title">Scale Transaction Manager Count</p>
+      <div class="scale-form">
+        <label class="scale-field">
+          <span class="scale-label">Instance</span>
+          <select class="scale-input" [(ngModel)]="scaleTmCountForm.instance">
+            <option value="">All Instances</option>
+            @for (name of getInstanceNames(); track name) {
+              <option [value]="name">{{ name }}</option>
+            }
+          </select>
+        </label>
+        <label class="scale-field">
+          <span class="scale-label">TM Prefix</span>
+          <input type="text" class="scale-input" [(ngModel)]="scaleTmCountForm.prefix" placeholder="e.g. mpesa" />
+        </label>
+        <label class="scale-field">
+          <span class="scale-label">Count</span>
+          <input type="number" class="scale-input scale-input--narrow" [(ngModel)]="scaleTmCountForm.count" min="1" max="20" />
+        </label>
+        <div class="scale-actions">
+          <button class="btn-apply" (click)="submitScaleTmCount()">Apply</button>
+          <button class="btn-ghost" (click)="showScaleTmCountPanel.set(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Scale Sessions panel ───────────────────────────────────── -->
+  @if (showScaleSessionsPanel()) {
+    <div class="scale-panel">
+      <p class="scale-panel-title">Scale Sessions — {{ scaleSessionsForm.tmName }}</p>
+      <div class="scale-form">
+        <label class="scale-field">
+          <span class="scale-label">Instance</span>
+          <input type="text" class="scale-input scale-input--readonly" [ngModel]="scaleSessionsForm.instance" readonly />
+        </label>
+        <label class="scale-field">
+          <span class="scale-label">TM Name</span>
+          <input type="text" class="scale-input scale-input--readonly" [ngModel]="scaleSessionsForm.tmName" readonly />
+        </label>
+        <label class="scale-field">
+          <span class="scale-label">Sessions</span>
+          <input type="number" class="scale-input scale-input--narrow" [(ngModel)]="scaleSessionsForm.sessions" min="1" max="100" />
+        </label>
+        <label class="scale-field">
+          <span class="scale-label">Max Sessions</span>
+          <input type="number" class="scale-input scale-input--narrow" [(ngModel)]="scaleSessionsForm.maxSessions" min="1" max="200" />
+        </label>
+        <div class="scale-actions">
+          <button class="btn-apply" (click)="submitScaleSessions()">Apply</button>
+          <button class="btn-ghost" (click)="showScaleSessionsPanel.set(false)">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ── Per-instance section ───────────────────────────────────── -->
+  @if (loading() && instances().length === 0) {
+    <div class="empty-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round" class="spin">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+      </svg>
+      <p class="empty-title">Loading metrics…</p>
+    </div>
+  }
+
+  @if (!loading() && instances().length === 0) {
+    <div class="empty-card">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+        <line x1="8" y1="21" x2="16" y2="21"></line>
+        <line x1="12" y1="17" x2="12" y2="21"></line>
+      </svg>
+      <p class="empty-title">No metrics available</p>
+      <p class="empty-sub">Ensure Core instances are running</p>
+    </div>
+  }
+
+  <div class="instance-list">
+    @for (inst of instances(); track inst.instance) {
+      <div class="instance-card">
+
+        <div class="instance-header">
+          <span class="instance-name">{{ inst.instance }}</span>
+          <span class="instance-url">{{ inst.baseUrl }}</span>
+          @if (inst.status === 'UNREACHABLE') {
+            <span class="unreachable-badge">Unreachable</span>
+          }
+        </div>
+
+        @if (inst.status === 'UNREACHABLE') {
+          <div class="instance-body">
+            <div class="alert alert-error">{{ inst.error }}</div>
+          </div>
+        } @else if (inst.transactionManagers && inst.transactionManagers.length > 0) {
+          <div class="table-scroll">
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th>TM Name</th>
+                  <th>Sessions</th>
+                  <th>Max</th>
+                  <th>Active</th>
+                  <th>Idle</th>
+                  <th>Outstanding</th>
+                  <th>In Transit</th>
+                  <th>TPS</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (tm of inst.transactionManagers; track tm.name) {
+                  <tr class="metrics-row">
+                    <td class="cell-tm-name">{{ tm.name }}</td>
+                    <td>{{ tm.sessions }}</td>
+                    <td>{{ tm.maxSessions }}</td>
+                    <td>
+                      <div class="session-cell">
+                        <span>{{ tm.activeSessions }}</span>
+                        <div class="util-track">
+                          <div class="util-bar"
+                               [class.util-bar--green]="getSessionUtilization(tm) < 60"
+                               [class.util-bar--yellow]="getSessionUtilization(tm) >= 60 && getSessionUtilization(tm) < 85"
+                               [class.util-bar--red]="getSessionUtilization(tm) >= 85"
+                               [style.width.%]="getSessionUtilization(tm)">
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ tm.idleSessions }}</td>
+                    <td>
+                      <span class="count-value" [class.count-value--warn]="tm.outstandingTransactions > 0">
+                        {{ tm.outstandingTransactions }}
+                      </span>
+                    </td>
+                    <td>
+                      <span class="count-value" [class.count-value--warn]="tm.inTransit > 0">
+                        {{ tm.inTransit }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="tps-cell">
+                        <span class="tps-current">{{ tm.tps }}</span>
+                        <span class="tps-detail">avg {{ tm.tpsAvg | number:'1.1-1' }} / peak {{ tm.tpsPeak | number:'1.1-1' }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn-scale" (click)="prefillScaleSessions(inst.instance, tm)">Scale</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (inst.summary) {
+            <div class="instance-summary">
+              <span>{{ inst.summary.totalTMs }} TMs</span>
+              <span>{{ inst.summary.totalSessions }} sessions</span>
+              <span>{{ inst.summary.totalActiveSessions }} active</span>
+              <span>{{ inst.summary.totalIdleSessions }} idle</span>
+            </div>
+          }
+        } @else {
+          <div class="instance-body">
+            <p class="no-tm-msg">No transaction managers found on this instance.</p>
+          </div>
+        }
+
+      </div>
+    }
+  </div>
+
+</div>

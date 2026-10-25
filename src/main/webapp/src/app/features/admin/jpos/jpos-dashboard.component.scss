@@ -1,0 +1,434 @@
+@import 'content/scss/variables';
+
+// ── Page wrapper ──────────────────────────────────────────────────────────────
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: $sp-8;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+// ── Toolbar ───────────────────────────────────────────────────────────────────
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-3;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  flex-wrap: wrap;
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 6px 12px;
+  background: $surface;
+  color: $text-muted;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+
+  &.btn-ghost--info {
+    color: $info;
+    border-color: $info-border;
+    background: $info-light;
+    &:hover { background: darken($info-light, 3%); }
+  }
+}
+
+.auto-refresh-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: $text-muted;
+  cursor: pointer;
+  user-select: none;
+
+  input[type="checkbox"] { cursor: pointer; accent-color: $primary; }
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────────
+.alert {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+
+  &.alert-error   { background: $danger-light;  color: $danger;  border: 1px solid $danger-border; }
+  &.alert-success { background: $success-light; color: $success; border: 1px solid $success-border; cursor: pointer; }
+}
+
+// ── KPI grid ──────────────────────────────────────────────────────────────────
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: $sp-2;
+}
+
+.kpi-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $sp-3 $sp-4;
+  box-shadow: $shadow-xs;
+}
+
+.kpi-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: $text;
+  letter-spacing: -0.02em;
+
+  &.kpi-value--success { color: $success; }
+  &.kpi-value--warning { color: $warning; }
+}
+
+.kpi-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 3px;
+}
+
+// ── Scale panels ──────────────────────────────────────────────────────────────
+.scale-panel {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: $sp-4 $sp-5;
+  box-shadow: $shadow-xs;
+}
+
+.scale-panel-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text;
+  margin: 0 0 $sp-3 0;
+}
+
+.scale-form {
+  display: flex;
+  gap: $sp-3;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.scale-field {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+}
+
+.scale-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.scale-input {
+  padding: 6px 10px;
+  border: 1px solid $gray-300;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-family: $font;
+  color: $text;
+  background: $surface;
+  outline: none;
+  min-width: 140px;
+  transition: border-color $duration $ease, box-shadow $duration $ease;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.10);
+  }
+
+  &.scale-input--narrow { min-width: 80px; }
+
+  &.scale-input--readonly {
+    background: $gray-50;
+    color: $text-muted;
+    cursor: default;
+  }
+}
+
+.scale-actions {
+  display: flex;
+  gap: $sp-2;
+  align-items: center;
+}
+
+.btn-apply {
+  padding: 6px 16px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: $radius-sm;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease;
+
+  &:hover { background: darken($primary, 8%); }
+}
+
+// ── Empty card ────────────────────────────────────────────────────────────────
+.empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-12 $sp-8;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  color: $text-subtle;
+
+  .empty-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: $text-muted;
+    margin: $sp-2 0 0;
+  }
+
+  .empty-sub {
+    font-size: 0.8125rem;
+    color: $text-subtle;
+    margin: 0;
+  }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 0.9s linear infinite; }
+
+// ── Instance list ─────────────────────────────────────────────────────────────
+.instance-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+// ── Instance card ─────────────────────────────────────────────────────────────
+.instance-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  box-shadow: $shadow-xs;
+  overflow: hidden;
+}
+
+.instance-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  background: $gray-50;
+  border-bottom: 1px solid $border;
+}
+
+.instance-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $text;
+}
+
+.instance-url {
+  font-size: 0.6875rem;
+  color: $text-subtle;
+  font-family: $font-mono;
+}
+
+.unreachable-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: $danger-light;
+  color: $danger;
+  border: 1px solid $danger-border;
+}
+
+.instance-body {
+  padding: $sp-4;
+}
+
+.no-tm-msg {
+  font-size: 0.8125rem;
+  color: $text-subtle;
+  text-align: center;
+  padding: $sp-4 0;
+  margin: 0;
+}
+
+// ── Instance summary footer ───────────────────────────────────────────────────
+.instance-summary {
+  display: flex;
+  gap: $sp-4;
+  padding: $sp-2 $sp-4;
+  background: $gray-50;
+  border-top: 1px solid $gray-100;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: $text-muted;
+}
+
+// ── Metrics table ─────────────────────────────────────────────────────────────
+.table-scroll { overflow-x: auto; }
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead tr {
+    background: $gray-50;
+    border-bottom: 1px solid $border;
+  }
+
+  th {
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: $text-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 8px 12px;
+    font-size: 0.8125rem;
+    color: $text;
+    border-top: 1px solid $gray-100;
+    vertical-align: middle;
+  }
+
+  .metrics-row:hover td { background: $gray-50; }
+}
+
+.cell-tm-name {
+  font-family: $font-mono;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// ── Session utilisation bar ───────────────────────────────────────────────────
+.session-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.util-track {
+  width: 60px;
+  height: 4px;
+  background: $gray-200;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.util-bar {
+  height: 4px;
+  border-radius: 2px;
+  transition: width 0.3s $ease;
+
+  &.util-bar--green  { background: $success; }
+  &.util-bar--yellow { background: $warning; }
+  &.util-bar--red    { background: $danger;  }
+}
+
+// ── Count value ───────────────────────────────────────────────────────────────
+.count-value {
+  font-size: 0.8125rem;
+
+  &.count-value--warn {
+    color: $warning;
+    font-weight: 600;
+  }
+}
+
+// ── TPS cell ──────────────────────────────────────────────────────────────────
+.tps-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tps-current {
+  font-weight: 500;
+  font-size: 0.8125rem;
+}
+
+.tps-detail {
+  font-size: 0.625rem;
+  color: $text-subtle;
+  white-space: nowrap;
+}
+
+// ── Scale button ──────────────────────────────────────────────────────────────
+.btn-scale {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  background: $surface;
+  color: $text-muted;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  font-family: $font;
+  cursor: pointer;
+  transition: background $duration $ease, color $duration $ease;
+
+  &:hover { background: $gray-100; color: $text; }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .page { padding: $sp-4; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .toolbar { flex-direction: column; align-items: flex-start; }
+  .scale-form { flex-direction: column; align-items: stretch; }
+  .scale-input { min-width: 0; width: 100%; }
+}

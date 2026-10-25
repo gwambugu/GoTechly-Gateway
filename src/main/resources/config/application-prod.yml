@@ -1,0 +1,243 @@
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+logging:
+  level:
+    root: INFO
+    com.dotechly.gotechly: INFO
+    org.springframework.cloud.gateway: WARN
+    io.github.resilience4j: WARN
+spring:
+  jackson:
+    serialization:
+      indent-output: true
+  r2dbc:
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://postgres:5432/gotechly}
+    username: ${SPRING_R2DBC_USERNAME:gotechly_gw}
+    password: ${SPRING_R2DBC_PASSWORD}
+    pool:
+      enabled: true
+      initial-size: 5
+      max-size: 30
+      max-idle-time: 30m
+      validation-query: SELECT 1 FROM DUAL
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/gotechly}
+    username: ${SPRING_DATASOURCE_USERNAME:gotechly_gw}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      pool-name: GoTechlyGatewayHikariPool
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: SELECT 1 FROM DUAL
+  liquibase:
+    change-log: classpath:config/liquibase/master.xml
+    enabled: true
+  mail:
+    host: localhost
+    port: 25
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+  cloud:
+    loadbalancer:
+      configurations: default
+      # Was unset in prod, so the health-aware supplier in GoTechlyCoreLbConfig fell back to the
+      # framework defaults (/actuator/health, 25s). Both are now explicit, and the path points at
+      # Core's node-drain probe so an operator can take one instance out of the pool before
+      # deploying a plugin — see docs/controlled-plugin-deployment.md.
+      # The interval IS the drain latency: a flip takes up to one probe to be observed.
+      #
+      # DEPLOY GoTechly-Core BEFORE THIS GATEWAY. An older Core 404s this path, which is not 2xx,
+      # so the LB would filter out every instance at once.
+      health-check:
+        initial-delay: 0s
+        interval: 10s
+        path:
+          default: /api/v1/admin/node/routable
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 5000
+            response-timeout: 30s
+            pool:
+              type: fixed
+              max-connections: 200
+              acquire-timeout: 45000
+              max-idle-time: 60s
+            ssl:
+              key-store: ${GOTECHLY_INTERNAL_KEYSTORE}
+              key-store-password: ${GOTECHLY_INTERNAL_KEYSTORE_PASSWORD}
+              key-store-type: PKCS12
+              trusted-x509-certificates:
+                - ${GOTECHLY_CORE_TRUSTED_CERT}
+          default-filters:
+            - RemoveRequestHeader=Origin
+            - name: Retry
+              args:
+                retries: 2
+                methods: GET,POST,PUT,DELETE,PATCH
+                series: []
+                exceptions:
+                  - java.net.ConnectException
+                  - io.netty.channel.AbstractChannel$AnnotatedConnectException
+                backoff:
+                  firstBackoff: 50ms
+                  maxBackoff: 500ms
+                  factor: 2
+                  basedOnPreviousValue: false
+          routes:
+            - id: gotechly-core-payment-api
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/payment/api/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-payment
+                    fallbackUri: forward:/api/fallback/core-unavailable
+            - id: gotechly-core-api
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/api/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-portal
+                    fallbackUri: forward:/api/fallback/core-unavailable
+            - id: gotechly-core-actuator
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/actuator/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-actuator
+                    fallbackUri: forward:/api/fallback/core-unavailable
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+  health:
+    show-details: when-authorized
+resilience4j:
+  # One breaker per route, NOT one per service. A shared instance meant an RNDPS outbound
+  # degradation opened the breaker for the admin portal too — the operators lost the config UI at
+  # exactly the moment they needed it to diagnose the corridor. Payment traffic and the portal now
+  # fail independently.
+  #
+  # Every instance MUST be declared. An undeclared name falls back to Spring Cloud CircuitBreaker's
+  # defaults, whose TimeLimiter is 1 SECOND — that would fail almost every Core call.
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 50
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        # Open on slowness, not only on outright failure. Without this the breaker learns nothing
+        # until calls hit the TimeLimiter, so a corridor can hold threads for 30s a time while the
+        # breaker still reads as healthy.
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+    instances:
+      gotechly-core-payment:
+        base-config: default
+      gotechly-core-portal:
+        base-config: default
+        # The portal reads config tables. It should trip sooner and recover sooner than a payment
+        # corridor, and never be held open by one.
+        slow-call-duration-threshold: 3s
+        wait-duration-in-open-state: 5s
+      gotechly-core-actuator:
+        base-config: default
+        slow-call-duration-threshold: 3s
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 30s
+        cancel-running-future: true
+    instances:
+      gotechly-core-payment:
+        base-config: default
+      # An admin config read has no business taking 30s. Failing it fast frees the Gateway
+      # connection those calls would otherwise hold in the shared 200-connection pool.
+      gotechly-core-portal:
+        timeout-duration: 10s
+      gotechly-core-actuator:
+        timeout-duration: 5s
+
+gotechly:
+  security:
+    authentication:
+      jwt:
+        # This token must be encoded using Base64 and be at least 256 bits long (512 bits is better)
+        base64-secret: ${GOTECHLY_SECURITY_AUTHENTICATION_JWT_BASE64_SECRET}
+        # Token is valid 24 hours
+        token-validity-in-seconds: 86400
+        token-validity-in-seconds-for-remember-me: 2592000
+    internal-api-key:
+      secret: ${GOTECHLY_INTERNAL_API_KEY}
+      header-name: X-Internal-Api-Key
+  gateway:
+    services:
+      - name: GoTechly-Core-1
+        base-url: https://localhost:8081
+        health-path: /actuator/health
+      - name: GoTechly-Core-2
+        base-url: https://localhost:8082
+        health-path: /actuator/health
+      - name: GoTechly-Core-3
+        base-url: https://localhost:8083
+        health-path: /actuator/health
+    multi-port:
+      # Admin/IT portal — full access to portal APIs, no payment APIs
+      webapp:
+        port: 7001
+        tls:
+          enabled: true
+          use-server-default: true
+
+      # Partner management portal — restricted to partner, transaction, and audit APIs
+      webapp-partner:
+        port: 7002
+        allowed-paths:
+          - /services/core/api/v1/partner/**
+          - /services/core/api/payment-logs/**
+          - /services/core/api/history-payment-logs/**
+          - /services/core/api/audit-logs/**
+          - /api/authenticate
+          - /api/account/**
+        tls:
+          enabled: true
+          use-server-default: true
+
+      ports:
+        # External port — only exposes specific payment APIs
+        external:
+          port: 18181
+          allowed-paths:
+            - /services/core/payment/api/v1/c2b/**
+            - /services/core/payment/api/v1/legacy/inward/**
+          tls:
+            enabled: true
+            use-server-default: true
+
+  mail:
+    from: gotechly@localhost
+    base-url: http://localhost:8080

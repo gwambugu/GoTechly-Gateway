@@ -1,0 +1,23 @@
+spring:
+  profiles:
+    active: dev,tls
+  application:
+    name: GoTechly-Gateway
+  liquibase:
+    change-log: classpath:config/liquibase/master.xml
+    enabled: true
+gotechly:
+  security:
+    # Active Directory authentication. When enabled=false (default), the gateway uses the
+    # local BCrypt ReactiveAuthenticationManager (dev/no-AD). Set AD_ENABLED=true plus the
+    # connection/service-account env vars to turn on AD. Secrets must come from the
+    # environment — never commit the service-account password.
+    ad:
+      enabled: ${AD_ENABLED:false}
+      url: ${AD_URL:ldaps://ad.example.com:3269}                        # Global Catalog over SSL
+      domain: ${AD_DOMAIN:example.com}                               # UPN suffix
+      base-dn: ${AD_BASE_DN:DC=example,DC=com}
+      service-account-upn: ${AD_SVC_UPN:CN=gotechly-ldap,OU=Service Accounts,DC=example,DC=com}
+      service-account-password: ${AD_SVC_PASSWORD:}
+      user-search-filter: ${AD_USER_FILTER:(&(objectClass=user)(|(userPrincipalName={0})(mail={0})))}
+      local-admin-login: ${AD_LOCAL_ADMIN:admin}
