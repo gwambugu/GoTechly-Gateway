@@ -83,6 +83,10 @@ spring:
                 - ${GOTECHLY_CORE_TRUSTED_CERT}
           default-filters:
             - RemoveRequestHeader=Origin
+            # The Gateway already answered the client's 100-continue; forwarding it to Core over
+            # HTTP/2 left the real response unobserved until the TimeLimiter fired (curl sends it
+            # for any body > 1KB).
+            - RemoveRequestHeader=Expect
             - name: Retry
               args:
                 retries: 2
@@ -101,6 +105,21 @@ spring:
               uri: lb://gotechly-core
               predicates:
                 - Path=/services/core/payment/api/**
+              filters:
+                - StripPrefix=2
+                - name: CircuitBreaker
+                  args:
+                    name: gotechly-core-payment
+                    fallbackUri: forward:/api/fallback/core-unavailable
+            # R-NDPS inbound (pacs.008/007/028, camt.003, pacs.002) lives under Core's /api/v2/rndps,
+            # not /payment/api, so without this it fell through to gotechly-core-api and ran on the
+            # portal breaker (10s limit, 3s slow-call). Payment traffic must not trip the admin portal,
+            # nor be cut off by its tighter limits. Must stay ABOVE gotechly-core-api: routes match in
+            # order.
+            - id: gotechly-core-rndps-api
+              uri: lb://gotechly-core
+              predicates:
+                - Path=/services/core/api/v2/rndps/**
               filters:
                 - StripPrefix=2
                 - name: CircuitBreaker
