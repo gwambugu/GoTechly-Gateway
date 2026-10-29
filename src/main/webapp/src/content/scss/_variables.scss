@@ -3,10 +3,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Brand ─────────────────────────────────────────────────────────────────────
-$primary:         #7C3AED;   // cyber purple
-$primary-hover:   #6D28D9;
-$primary-light:   #F5F3FF;
-$primary-subtle:  #EDE9FE;
+$brand-dark:      #4A2A51;   // deep plum — sidenav, chrome, logo (white text)
+$primary:         #7B3F8C;   // plum — buttons, links, focus
+$primary-hover:   #64326F;
+$primary-light:   #F6F1F7;
+$primary-subtle:  #EADFED;
 
 // ── Neutral scale ─────────────────────────────────────────────────────────────
 $gray-50:  #f9fafb;
